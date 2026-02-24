@@ -1,0 +1,40 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.bridge:placement-system >---------------------
+[INFO] Building Bridge Placement System 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ placement-system ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ placement-system ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 76 source files with javac [debug release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Projects/Bridge_Project/backend/src/main/java/com/bridge/placement/controller/AdminController.java:[130,100] cannot find symbol
+  symbol:   variable INTERVIEW
+  location: class com.bridge.placement.enums.ApplicationStatus
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.695 s
+[INFO] Finished at: 2026-02-22T09:15:18+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project placement-system: Compilation failure
+[ERROR] /C:/Projects/Bridge_Project/backend/src/main/java/com/bridge/placement/controller/AdminController.java:[130,100] cannot find symbol
+[ERROR]   symbol:   variable INTERVIEW
+[ERROR]   location: class com.bridge.placement.enums.ApplicationStatus
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
