@@ -7,5 +7,5 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/placement-system-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 9092
+EXPOSE ${PORT:-9092}
 ENTRYPOINT ["java", "-jar", "app.jar"]
