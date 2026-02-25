@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
     const isEditMode = !!jobToEdit;
@@ -7,15 +7,14 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        jobType: 'FULL_TIME',
-        ctcFixed: '',
-        ctcVariable: '',
-        bondYears: '',
-        minCgpa: '',
-        backlogsAllowed: '0',
-        eligibleBranches: '',
+        requiredSkills: '',
+        experienceRequired: '',
+        salaryRange: '',
         location: '',
-        applicationDeadline: ''
+        workMode: 'ONSITE',
+        jobType: 'FULLTIME',
+        applicationDeadline: '',
+        maxApplicants: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -26,20 +25,20 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
             setFormData({
                 title: jobToEdit.title || '',
                 description: jobToEdit.description || '',
-                jobType: jobToEdit.jobType || 'FULL_TIME',
-                ctcFixed: jobToEdit.ctcFixed || '',
-                ctcVariable: jobToEdit.ctcVariable || '',
-                bondYears: jobToEdit.bondYears || '',
-                minCgpa: jobToEdit.minCgpa || '',
-                backlogsAllowed: jobToEdit.backlogsAllowed?.toString() || '0',
-                eligibleBranches: jobToEdit.eligibleBranches || '',
+                requiredSkills: jobToEdit.requiredSkills || '',
+                experienceRequired: jobToEdit.experienceRequired?.toString() || '',
+                salaryRange: jobToEdit.salaryRange || '',
                 location: jobToEdit.location || '',
-                applicationDeadline: jobToEdit.applicationDeadline ? new Date(jobToEdit.applicationDeadline).toISOString().split('T')[0] : ''
+                workMode: jobToEdit.workMode || 'ONSITE',
+                jobType: jobToEdit.jobType || 'FULLTIME',
+                applicationDeadline: jobToEdit.applicationDeadline ? new Date(jobToEdit.applicationDeadline).toISOString().split('T')[0] : '',
+                maxApplicants: jobToEdit.maxApplicants?.toString() || ''
             });
         } else {
             setFormData({
-                title: '', description: '', jobType: 'FULL_TIME', ctcFixed: '', ctcVariable: '',
-                bondYears: '', minCgpa: '', backlogsAllowed: '0', eligibleBranches: '', location: '', applicationDeadline: ''
+                title: '', description: '', requiredSkills: '', experienceRequired: '',
+                salaryRange: '', location: '', workMode: 'ONSITE', jobType: 'FULLTIME',
+                applicationDeadline: '', maxApplicants: ''
             });
         }
         setError('');
@@ -53,14 +52,17 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
         setLoading(true);
 
         try {
-            // Convert types correctly before sending
             const payload = {
-                ...formData,
-                ctcFixed: parseInt(formData.ctcFixed) || 0,
-                ctcVariable: parseInt(formData.ctcVariable) || 0,
-                bondYears: parseFloat(formData.bondYears) || 0,
-                minCgpa: parseFloat(formData.minCgpa) || 0,
-                backlogsAllowed: parseInt(formData.backlogsAllowed) || 0,
+                title: formData.title,
+                description: formData.description,
+                requiredSkills: formData.requiredSkills,
+                experienceRequired: parseInt(formData.experienceRequired) || 0,
+                salaryRange: formData.salaryRange,
+                location: formData.location,
+                workMode: formData.workMode,
+                jobType: formData.jobType,
+                applicationDeadline: formData.applicationDeadline,
+                maxApplicants: formData.maxApplicants ? parseInt(formData.maxApplicants) : null
             };
 
             await onSave(payload, isEditMode ? jobToEdit.id : null);
@@ -117,7 +119,7 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
                                 <div>
                                     <label className={labelClass}>Job Type *</label>
                                     <select required value={formData.jobType} onChange={e => setFormData({ ...formData, jobType: e.target.value })} className={inputClass} >
-                                        <option className="bg-background text-white" value="FULL_TIME">Full Time</option>
+                                        <option className="bg-background text-white" value="FULLTIME">Full Time</option>
                                         <option className="bg-background text-white" value="PART_TIME">Part Time</option>
                                         <option className="bg-background text-white" value="INTERNSHIP">Internship</option>
                                         <option className="bg-background text-white" value="WORK_FROM_HOME">Work From Home</option>
@@ -128,8 +130,16 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
                                     <textarea required rows={4} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClass} placeholder="Job description, requirements, responsibilities..." />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Location</label>
-                                    <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputClass} placeholder="e.g. Bangalore, India" />
+                                    <label className={labelClass}>Location *</label>
+                                    <input required type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputClass} placeholder="e.g. Bangalore, India" />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Work Mode *</label>
+                                    <select required value={formData.workMode} onChange={e => setFormData({ ...formData, workMode: e.target.value })} className={inputClass}>
+                                        <option className="bg-background text-white" value="ONSITE">Onsite</option>
+                                        <option className="bg-background text-white" value="REMOTE">Remote</option>
+                                        <option className="bg-background text-white" value="HYBRID">Hybrid</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className={labelClass}>Application Deadline *</label>
@@ -139,31 +149,23 @@ export default function JobModal({ isOpen, onClose, onSave, jobToEdit }) {
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="font-semibold text-white border-b border-white/10 pb-2">Compensation & Criteria</h3>
+                            <h3 className="font-semibold text-white border-b border-white/10 pb-2">Skills & Compensation</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className={labelClass}>Fixed CTC (in LPA) *</label>
-                                    <input required type="number" step="0.1" value={formData.ctcFixed} onChange={e => setFormData({ ...formData, ctcFixed: e.target.value })} className={inputClass} placeholder="e.g. 10" />
+                                <div className="md:col-span-2">
+                                    <label className={labelClass}>Required Skills *</label>
+                                    <input required type="text" value={formData.requiredSkills} onChange={e => setFormData({ ...formData, requiredSkills: e.target.value })} className={inputClass} placeholder="e.g. Java, Spring Boot, React" />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Variable CTC (in LPA)</label>
-                                    <input type="number" step="0.1" value={formData.ctcVariable} onChange={e => setFormData({ ...formData, ctcVariable: e.target.value })} className={inputClass} placeholder="e.g. 2" />
+                                    <label className={labelClass}>Experience Required (Years) *</label>
+                                    <input required type="number" min="0" value={formData.experienceRequired} onChange={e => setFormData({ ...formData, experienceRequired: e.target.value })} className={inputClass} placeholder="e.g. 2" />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Bond Years</label>
-                                    <input type="number" step="0.5" value={formData.bondYears} onChange={e => setFormData({ ...formData, bondYears: e.target.value })} className={inputClass} placeholder="e.g. 2.5" />
+                                    <label className={labelClass}>Salary Range *</label>
+                                    <input required type="text" value={formData.salaryRange} onChange={e => setFormData({ ...formData, salaryRange: e.target.value })} className={inputClass} placeholder="e.g. 8-12 LPA" />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Minimum CGPA</label>
-                                    <input type="number" step="0.1" max="10" value={formData.minCgpa} onChange={e => setFormData({ ...formData, minCgpa: e.target.value })} className={inputClass} placeholder="e.g. 7.5" />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Allowed Active Backlogs</label>
-                                    <input type="number" min="0" value={formData.backlogsAllowed} onChange={e => setFormData({ ...formData, backlogsAllowed: e.target.value })} className={inputClass} placeholder="0" />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Eligible Branches</label>
-                                    <input type="text" value={formData.eligibleBranches} onChange={e => setFormData({ ...formData, eligibleBranches: e.target.value })} className={inputClass} placeholder="e.g. CSE, IT, ECE" />
+                                    <label className={labelClass}>Max Applicants</label>
+                                    <input type="number" min="1" value={formData.maxApplicants} onChange={e => setFormData({ ...formData, maxApplicants: e.target.value })} className={inputClass} placeholder="e.g. 100" />
                                 </div>
                             </div>
                         </div>

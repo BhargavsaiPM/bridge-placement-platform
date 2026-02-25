@@ -1,6 +1,7 @@
 package com.bridge.placement.entity;
 
 import com.bridge.placement.enums.RoundName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +18,7 @@ import lombok.Setter;
 @Setter
 public class JobRound extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     @JoinColumn(name = "job_id", nullable = false)
     private Job job;

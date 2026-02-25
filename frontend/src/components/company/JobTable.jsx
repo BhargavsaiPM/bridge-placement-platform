@@ -25,7 +25,7 @@ export default function JobTable({ jobs, onCloseJob, onEditJob }) {
                                     {job.title}
                                 </td>
                                 <td className="p-4 text-text-secondary">
-                                    {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}
+                                    {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : 'N/A'}
                                 </td>
                                 <td className="p-4 text-center">
                                     <div className="flex items-center justify-center gap-4 text-xs">
@@ -42,8 +42,8 @@ export default function JobTable({ jobs, onCloseJob, onEditJob }) {
                                 </td>
                                 <td className="p-4">
                                     <span className={`px-2 py-1 rounded-md text-xs font-bold ${job.status === 'CLOSED'
-                                            ? 'bg-danger/20 text-danger'
-                                            : 'bg-primary/20 text-primary'
+                                        ? 'bg-danger/20 text-danger'
+                                        : 'bg-primary/20 text-primary'
                                         }`}>
                                         {job.status || 'OPEN'}
                                     </span>

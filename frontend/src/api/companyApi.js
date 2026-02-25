@@ -7,13 +7,14 @@ export const companyApi = {
 
     // Officers
     getOfficers: () => api.get('/company/officers'),
-    createOfficer: (data) => api.post('/company/officer', data),
+    createOfficer: (data) => api.post('/company/create-placement-officer', data),
     blockOfficer: (id) => api.put(`/company/officer/${id}/block`),
     unblockOfficer: (id) => api.put(`/company/officer/${id}/unblock`),
     getOfficerLogs: () => api.get('/company/officer/logs'),
 
     // Jobs
     getJobs: () => api.get('/company/jobs'),
+    createJob: (data) => api.post('/company/job', data),
     updateJob: (id, data) => api.put(`/company/job/${id}`, data),
     closeJob: (id) => api.put(`/company/job/${id}/close`),
     getJobStats: (id) => api.get(`/company/job/${id}/stats`),
