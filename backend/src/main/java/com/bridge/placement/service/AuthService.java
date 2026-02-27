@@ -58,28 +58,70 @@ public class AuthService {
     }
 
     @Transactional
-    public MessageResponse registerUser(RegisterUserRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+    public MessageResponse registerUser(RegisterUserRequest req) {
+        if (userRepository.existsByEmail(req.getEmail())) {
             return new MessageResponse("Error: Email is already in use!");
         }
 
         User user = new User();
-        user.setName(signUpRequest.getName());
-        user.setEmail(signUpRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setRoleType(signUpRequest.getRoleType());
-        user.setMobile(signUpRequest.getMobile());
-        user.setDob(signUpRequest.getDob());
-        user.setGithubLink(signUpRequest.getGithubLink());
-        user.setResumeUrl(signUpRequest.getResumeFileName());
-        user.setSkills(signUpRequest.getSkills());
-        user.setAchievements(signUpRequest.getAchievements());
-        user.setProfilePhoto(signUpRequest.getProfilePhoto());
+
+        // Name
+        user.setFirstName(req.getFirstName());
+        user.setMiddleName(req.getMiddleName());
+        user.setLastName(req.getLastName());
+
+        // Auth
+        user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setMobile(req.getMobile());
+        user.setDob(req.getDob());
+        user.setRoleType(req.getRoleType());
         user.setRole(Role.USER);
+
+        // Student-specific fields
+        user.setCollegeRollNumber(req.getCollegeRollNumber());
+        user.setCollegeMailId(req.getCollegeMailId());
+        user.setCollegeName(req.getCollegeName());
+        user.setCollegeCity(req.getCollegeCity());
+        user.setCollegeDistrict(req.getCollegeDistrict());
+        user.setCollegeCountry(req.getCollegeCountry());
+        user.setCollegePincode(req.getCollegePincode());
+        user.setStudentIdCardUrl(req.getStudentIdCardUrl());
+
+        // Professional-specific fields
+        user.setEmployeeId(req.getEmployeeId());
+        user.setCompanyMailId(req.getCompanyMailId());
+        user.setCompanyName(req.getCompanyName());
+        user.setCompanyCity(req.getCompanyCity());
+        user.setCompanyDistrict(req.getCompanyDistrict());
+        user.setCompanyCountry(req.getCompanyCountry());
+        user.setCompanyPincode(req.getCompanyPincode());
+        user.setCurrentPosition(req.getCurrentPosition());
+        user.setEmployeeIdCardUrl(req.getEmployeeIdCardUrl());
+
+        // Personal address
+        user.setCountry(req.getCountry());
+        user.setState(req.getState());
+        user.setDistrict(req.getDistrict());
+        user.setPincode(req.getPincode());
+        user.setCity(req.getCity());
+        user.setStreet(req.getStreet());
+        user.setDoorNumber(req.getDoorNumber());
+
+        // Extras
+        user.setGithubLink(req.getGithubLink());
+        user.setResumeUrl(req.getResumeFileName());
+        user.setSkills(req.getSkills());
+        user.setAchievements(req.getAchievements());
+        user.setProfilePhoto(req.getProfilePhoto());
+
+        // Approval - requires admin approval
+        user.setApproved(false);
+        user.setBlocked(false);
 
         userRepository.save(user);
 
-        return new MessageResponse("User registered successfully!");
+        return new MessageResponse("Registration submitted successfully! Please wait for Admin approval.");
     }
 
     @Transactional
@@ -107,8 +149,9 @@ public class AuthService {
         if (signUpRequest.getIndustrySector() != null) {
             company.setIndustrySector(signUpRequest.getIndustrySector());
         }
+        company.setProofDocumentUrl(signUpRequest.getProofDocumentUrl());
         company.setRole(Role.COMPANY);
-        company.setApproved(false); // Default false
+        company.setApproved(false);
 
         companyRepository.save(company);
 
@@ -117,28 +160,19 @@ public class AuthService {
 
     // --- Forgot / Reset Password Logic ---
 
-    // Simple in-memory OTP storage (Email -> OTP)
-    // In production, use Redis or Database with expiration
     public static final java.util.Map<String, String> otpStorage = new java.util.concurrent.ConcurrentHashMap<>();
 
     public MessageResponse forgotPassword(String email) {
-        // Check if email exists in User or Company
         boolean existsUser = userRepository.existsByEmail(email);
         boolean existsCompany = companyRepository.existsByDomainEmail(email);
 
         if (!existsUser && !existsCompany) {
-            // For security, don't reveal if email exists or not, but for debugging/dev we
-            // can be explicit if needed
-            // Here we return success to prevent enumeration, but since this is a dev
-            // project, we can just say sent.
             return new MessageResponse("If your email is registered, an OTP has been sent.");
         }
 
-        // Generate 6 digit OTP
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         otpStorage.put(email, otp);
 
-        // Try sending real email
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
@@ -149,7 +183,6 @@ public class AuthService {
             System.err.println("Email sending failed due to config: " + e.getMessage());
         }
 
-        // LOG OTP to Console (Mock Email Service / Backup for Dev)
         System.out.println("==========================================");
         System.out.println("🔐 FORGOT PASSWORD OTP for " + email + ": " + otp);
         System.out.println("==========================================");
@@ -164,7 +197,6 @@ public class AuthService {
             throw new RuntimeException("Invalid or expired OTP");
         }
 
-        // Update Password
         if (userRepository.existsByEmail(email)) {
             User user = userRepository.findByEmail(email).get();
             user.setPassword(passwordEncoder.encode(newPassword));
@@ -177,7 +209,6 @@ public class AuthService {
             throw new RuntimeException("User not found via email");
         }
 
-        // Clear OTP
         otpStorage.remove(email);
 
         return new MessageResponse("Password reset successfully! You can now login.");

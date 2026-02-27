@@ -4,11 +4,17 @@ export const adminApi = {
     // Stats
     getStats: () => api.get('/admin/stats'),
 
-    // Approvals
+    // Company Approvals
     getPendingCompanies: () => api.get('/admin/companies/pending'),
     approveCompany: (id) => api.post(`/admin/company/${id}/approve`),
     rejectCompany: (id) => api.post(`/admin/company/${id}/reject`),
     blockCompany: (id) => api.post(`/admin/company/${id}/block`),
+
+    // User Approvals
+    getPendingUsers: (type) => api.get(`/admin/users/pending?type=${type}`),
+    approveUser: (id) => api.post(`/admin/user/${id}/approve`),
+    rejectUser: (id) => api.post(`/admin/user/${id}/reject`),
+    blockUser: (id) => api.post(`/admin/user/${id}/block`),
 
     // Verify Admin Password
     verifyPassword: (password) => api.post('/admin/verify-password', { password }),

@@ -75,14 +75,14 @@ export default function SkillSelect({ selectedSkills, onChange }) {
             <label className="block text-sm font-medium text-text-secondary mb-2">Skills</label>
 
             <div
-                className="min-h-[50px] p-2 bg-white/5 border border-white/10 rounded-xl flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-primary/50 transition-all cursor-text"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-primary/50 transition-all cursor-text text-sm"
                 onClick={() => setIsOpen(true)}
             >
                 {/* Selected Skill Chips */}
                 {selectedSkills.map((skill, index) => (
                     <div
                         key={index}
-                        className="flex items-center gap-1 bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium"
+                        className="flex items-center gap-1 bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-medium"
                     >
                         <span>{skill}</span>
                         <button
@@ -109,7 +109,7 @@ export default function SkillSelect({ selectedSkills, onChange }) {
                         }}
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsOpen(true)}
-                        className="w-full bg-transparent border-none outline-none text-white placeholder:text-text-secondary text-sm p-1"
+                        className="w-full bg-transparent border-none outline-none text-white placeholder:text-text-secondary p-0"
                         placeholder={selectedSkills.length === 0 ? "Search or type skills..." : ""}
                     />
                 </div>

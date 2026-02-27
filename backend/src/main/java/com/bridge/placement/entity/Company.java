@@ -47,6 +47,9 @@ public class Company extends BaseEntity {
 
     private boolean createdByAdmin = false;
 
+    @Column(length = 1000)
+    private String proofDocumentUrl; // Company registration certificate / proof (jpg/png/pdf)
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.COMPANY;

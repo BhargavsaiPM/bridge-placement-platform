@@ -155,6 +155,54 @@ public class AdminController {
                 Map.of("name", "Officers", "value", officers)));
     }
 
+    // ==================== User Approvals ====================
+    @GetMapping("/users/pending")
+    public ResponseEntity<List<User>> getPendingUsers(@RequestParam String type) {
+        try {
+            com.bridge.placement.enums.UserType roleType = com.bridge.placement.enums.UserType
+                    .valueOf(type.toUpperCase());
+            return ResponseEntity.ok(userRepository.findByApprovedFalseAndBlockedFalseAndRoleType(roleType));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/user/{id}/approve")
+    public ResponseEntity<?> approveUser(@PathVariable Long id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setApproved(true);
+            user.setBlocked(false);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "User approved successfully"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/user/{id}/reject")
+    public ResponseEntity<?> rejectUser(@PathVariable Long id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            userRepository.delete(userOpt.get());
+            return ResponseEntity.ok(Map.of("message", "User rejected and deleted"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/user/{id}/block")
+    public ResponseEntity<?> blockUser(@PathVariable Long id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setBlocked(true);
+            user.setApproved(false);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "User blocked"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     // ==================== Activity ====================
     @GetMapping("/active-users")
     public ResponseEntity<List<Map<String, Object>>> getActiveUsers() {
@@ -162,7 +210,7 @@ public class AdminController {
         userRepository.findAll().forEach(u -> {
             Map<String, Object> entry = new HashMap<>();
             entry.put("id", u.getId());
-            entry.put("name", u.getName());
+            entry.put("name", u.getFullName());
             entry.put("email", u.getEmail());
             entry.put("type", "user");
             users.add(entry);
@@ -239,7 +287,7 @@ public class AdminController {
         List<Map<String, Object>> result = allApps.stream().map(app -> {
             Map<String, Object> entry = new HashMap<>();
             entry.put("id", app.getId());
-            entry.put("name", app.getUser() != null ? app.getUser().getName() : "Unknown");
+            entry.put("name", app.getUser() != null ? app.getUser().getFullName() : "Unknown");
             entry.put("email", app.getUser() != null ? app.getUser().getEmail() : "");
             entry.put("job", app.getJob() != null ? app.getJob().getTitle() : "Unknown");
             entry.put("status", app.getApplicationStatus().name());

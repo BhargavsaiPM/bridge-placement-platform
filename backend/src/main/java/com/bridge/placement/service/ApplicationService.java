@@ -88,7 +88,7 @@ public class ApplicationService {
                 .applicationId(app.getId())
                 .jobId(app.getJob().getId())
                 .jobTitle(app.getJob().getTitle())
-                .applicantName(app.getUser().getName())
+                .applicantName(app.getUser().getFullName())
                 .ailsScore(app.getAilsScore())
                 .matchLevel(deriveMatchLevel(app.getAilsScore()))
                 .explanation(app.getExplanation())

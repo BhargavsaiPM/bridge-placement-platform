@@ -22,7 +22,9 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setName(request.getName());
+        user.setFirstName(request.getFirstName());
+        user.setMiddleName(request.getMiddleName());
+        user.setLastName(request.getLastName());
         user.setMobile(request.getMobile());
         user.setDob(request.getDob());
         user.setGithubLink(request.getGithubLink());

@@ -35,4 +35,6 @@ public class RegisterCompanyRequest {
     private CompanyType companyType;
 
     private IndustrySector industrySector; // Optional
+
+    private String proofDocumentUrl; // Company proof document URL
 }

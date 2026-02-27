@@ -7,7 +7,12 @@ import java.time.LocalDate;
 @Data
 public class UpdateUserProfileRequest {
     @NotBlank
-    private String name;
+    private String firstName;
+
+    private String middleName;
+
+    @NotBlank
+    private String lastName;
 
     private String mobile;
     private LocalDate dob;

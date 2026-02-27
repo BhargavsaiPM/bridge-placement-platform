@@ -65,7 +65,8 @@ public class BridgeUserDetails implements UserDetails {
                 user.getEmail(),
                 user.getEmail(),
                 user.getPassword(),
-                authorities);
+                authorities,
+                user.isApproved() && !user.isBlocked());
     }
 
     public static BridgeUserDetails build(Company company) {

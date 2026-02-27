@@ -19,15 +19,22 @@ import java.time.LocalDate;
 @Setter
 public class User extends BaseEntity {
 
+    // ===== Name Fields =====
+    @Column(nullable = false)
+    private String firstName;
+
+    private String middleName; // Optional
+
+    @Column(nullable = false)
+    private String lastName;
+
+    // ===== Auth / Contact =====
     @Column(nullable = false, unique = true)
-    private String email;
+    private String email; // Personal mail ID
 
     @JsonIgnore
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String name;
 
     private String mobile;
 
@@ -39,18 +46,71 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER; // Always USER for this entity
+    private Role role = Role.USER;
 
+    // ===== Student-Specific Fields =====
+    private String collegeRollNumber;
+    private String collegeMailId;
+    private String collegeName;
+    private String collegeCity;
+    private String collegeDistrict;
+    private String collegeCountry;
+    private String collegePincode;
+
+    @Column(length = 1000)
+    private String studentIdCardUrl; // jpg/png
+
+    // ===== Working Professional-Specific Fields =====
+    private String employeeId;
+    private String companyMailId;
+    private String companyName;
+    private String companyCity;
+    private String companyDistrict;
+    private String companyCountry;
+    private String companyPincode;
+    private String currentPosition;
+
+    @Column(length = 1000)
+    private String employeeIdCardUrl; // jpg/png
+
+    // ===== Personal Address =====
+    private String country;
+    private String state;
+    private String district;
+    private String pincode;
+    private String city;
+    private String street;
+    private String doorNumber;
+
+    // ===== Documents =====
     @Column(length = 1000)
     private String profilePhoto;
 
     private String githubLink;
 
+    @Column(length = 1000)
     private String resumeUrl; // PDF only link
 
     @Column(columnDefinition = "TEXT")
-    private String skills; // Comma-separated list, e.g. "Java, Spring Boot, MySQL"
+    private String skills; // Comma-separated
 
     @Column(columnDefinition = "TEXT")
     private String achievements;
+
+    // ===== Approval =====
+    @Column(nullable = false)
+    private boolean approved = false;
+
+    @Column(nullable = false)
+    private boolean blocked = false;
+
+    // Helper to get full name
+    public String getFullName() {
+        StringBuilder sb = new StringBuilder(firstName);
+        if (middleName != null && !middleName.isBlank()) {
+            sb.append(" ").append(middleName);
+        }
+        sb.append(" ").append(lastName);
+        return sb.toString();
+    }
 }
