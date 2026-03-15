@@ -34,6 +34,10 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final LastSeenFilter lastSeenFilter; // N4 fix
+
+    @org.springframework.beans.factory.annotation.Value("${bridge.app.frontendUrl:http://localhost:3000}")
+    private String frontendUrl;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -74,6 +78,7 @@ public class SecurityConfig {
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(lastSeenFilter, JwtAuthenticationFilter.class); // N4 fix
 
         return http.build();
     }
@@ -83,7 +88,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("*")); // For development, allow all
+        config.setAllowedOrigins(List.of(frontendUrl)); // B36: restrict to frontend origin instead of '*'
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
         source.registerCorsConfiguration("/**", config);
@@ -95,7 +100,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOrigins(List.of(frontendUrl)); // B36: restrict to frontend origin instead of '*'
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);

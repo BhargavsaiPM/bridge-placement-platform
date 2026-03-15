@@ -4,6 +4,7 @@ import com.bridge.placement.dto.request.UpdateOfficerProfileRequest;
 import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.repository.PlacementOfficerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class OfficerService {
     private final PlacementOfficerRepository officerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public PlacementOfficer getOfficerProfile(Long officerId) {
         return officerRepository.findById(officerId)
@@ -44,5 +46,15 @@ public class OfficerService {
         officer.setAddress(fullAddress);
 
         return officerRepository.save(officer);
+    }
+
+    @Transactional
+    public void changePassword(Long officerId, String newPassword) {
+        PlacementOfficer officer = officerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+
+        officer.setPassword(passwordEncoder.encode(newPassword));
+        officer.setRequiresPasswordChange(false);
+        officerRepository.save(officer);
     }
 }

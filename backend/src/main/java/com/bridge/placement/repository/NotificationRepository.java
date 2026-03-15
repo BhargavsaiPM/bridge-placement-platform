@@ -12,4 +12,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // find unread
     List<Notification> findByUserEmailAndReadFlagFalse(String userEmail);
+
+    long countByUserEmailAndReadFlagFalse(String userEmail);
+
+    void deleteByCreatedAtBefore(java.time.LocalDateTime date);
 }

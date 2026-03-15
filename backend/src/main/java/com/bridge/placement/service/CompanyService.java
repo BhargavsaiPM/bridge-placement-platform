@@ -105,4 +105,18 @@ public class CompanyService {
 
         return companyRepository.save(company);
     }
+
+    @Transactional
+    public MessageResponse deactivateOfficer(Long companyId, Long officerId) {
+        PlacementOfficer officer = placementOfficerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+
+        if (!officer.getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized: officer does not belong to your company");
+        }
+
+        officer.setActive(false);
+        placementOfficerRepository.save(officer);
+        return new MessageResponse("Officer deactivated successfully");
+    }
 }

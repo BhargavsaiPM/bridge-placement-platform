@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -103,6 +104,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private boolean blocked = false;
+
+    // N4: Track when user was last active
+    private LocalDateTime lastSeen;
 
     // Helper to get full name
     public String getFullName() {

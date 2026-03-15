@@ -7,6 +7,7 @@ import com.bridge.placement.entity.JobRound;
 import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.enums.JobStatus;
 import com.bridge.placement.enums.RoundName;
+import com.bridge.placement.repository.ApplicationRepository;
 import com.bridge.placement.repository.JobRepository;
 import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.repository.CompanyRepository;
@@ -26,6 +27,7 @@ public class JobService {
     private final PlacementOfficerRepository placementOfficerRepository;
     private final CompanyRepository companyRepository;
     private final NotificationService notificationService;
+    private final ApplicationRepository applicationRepository;
 
     @Transactional
     public Job createJob(Long officerId, JobRequest request) {
@@ -39,6 +41,7 @@ public class JobService {
         job.setDescription(request.getDescription());
         job.setCompany(company);
         job.setRequiredSkills(request.getRequiredSkills());
+        job.setPreferredSkills(request.getPreferredSkills());
         job.setExperienceRequired(request.getExperienceRequired());
         job.setSalaryRange(request.getSalaryRange());
         job.setLocation(request.getLocation());
@@ -88,6 +91,7 @@ public class JobService {
         job.setDescription(request.getDescription());
         job.setCompany(company);
         job.setRequiredSkills(request.getRequiredSkills());
+        job.setPreferredSkills(request.getPreferredSkills());
         job.setExperienceRequired(request.getExperienceRequired());
         job.setSalaryRange(request.getSalaryRange());
         job.setLocation(request.getLocation());
@@ -121,10 +125,11 @@ public class JobService {
     }
 
     public List<Job> searchJobs(String location, String type) {
-        // Basic search implementation using Streams for simplicity in this skeleton
-        // In Prod: Use Criteria API or Specification
         return jobRepository.findAll().stream()
-                .filter(job -> (location == null || job.getLocation().toLowerCase().contains(location.toLowerCase())))
+                .filter(job -> location == null || job.getLocation() == null ||
+                        job.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .filter(job -> type == null || job.getJobType() == null ||
+                        job.getJobType().name().equalsIgnoreCase(type))
                 .collect(Collectors.toList());
     }
 
@@ -134,8 +139,6 @@ public class JobService {
 
     // Company Job Management
     public List<Job> getJobsByCompany(Long companyId) {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
         return jobRepository.findByCompanyId(companyId);
     }
 
@@ -204,10 +207,29 @@ public class JobService {
         jobRepository.save(job);
     }
 
+    @Transactional
+    public void deleteJobByCompany(Long companyId, Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (!job.getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized: Job does not belong to this company");
+        }
+
+        long activeApplications = job.getRounds().isEmpty() ? 0 :
+                applicationRepository.countByJobId(jobId);
+        if (activeApplications > 0) {
+            throw new RuntimeException("Cannot delete job with existing applications. Close it instead.");
+        }
+
+        jobRepository.delete(job);
+    }
+
     private void updateJobFields(Job job, JobRequest request) {
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
         job.setRequiredSkills(request.getRequiredSkills());
+        job.setPreferredSkills(request.getPreferredSkills());
         job.setExperienceRequired(request.getExperienceRequired());
         job.setSalaryRange(request.getSalaryRange());
         job.setLocation(request.getLocation());
@@ -215,6 +237,18 @@ public class JobService {
         job.setJobType(request.getJobType());
         job.setApplicationDeadline(request.getApplicationDeadline());
         job.setMaxApplicants(request.getMaxApplicants());
-        // Rounds update deferred for simplicity
+
+        // Update rounds (B9 fix)
+        if (request.getRounds() != null) {
+            job.getRounds().clear();
+            int order = 1;
+            for (String roundNameStr : request.getRounds()) {
+                JobRound round = new JobRound();
+                round.setRoundName(RoundName.valueOf(roundNameStr));
+                round.setRoundOrder(order++);
+                round.setJob(job);
+                job.getRounds().add(round);
+            }
+        }
     }
 }

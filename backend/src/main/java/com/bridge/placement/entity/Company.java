@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,4 +58,7 @@ public class Company extends BaseEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlacementOfficer> placementOfficers = new ArrayList<>();
+
+    // N4: Track when company was last active
+    private LocalDateTime lastSeen;
 }

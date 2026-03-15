@@ -6,7 +6,9 @@ import com.bridge.placement.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,5 +45,16 @@ public class NotificationService {
         List<Notification> list = notificationRepository.findByUserEmailAndReadFlagFalse(userEmail);
         list.forEach(n -> n.setReadFlag(true));
         notificationRepository.saveAll(list);
+    }
+
+    public long getUnreadCount(String userEmail) {
+        return notificationRepository.countByUserEmailAndReadFlagFalse(userEmail);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // Run daily at midnight
+    @Transactional
+    public void cleanupOldNotifications() {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        notificationRepository.deleteByCreatedAtBefore(thirtyDaysAgo);
     }
 }

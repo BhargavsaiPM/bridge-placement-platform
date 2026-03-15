@@ -1,6 +1,8 @@
 package com.bridge.placement.repository;
 
 import com.bridge.placement.entity.Application;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,11 +12,15 @@ import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    List<Application> findByJobId(Long jobId);
+    Page<Application> findByJobId(Long jobId, Pageable pageable);
 
     List<Application> findByUserId(Long userId);
 
     Optional<Application> findByUserIdAndJobId(Long userId, Long jobId);
+
+    long countByJobId(Long jobId);
+
+    long countByJobCompanyId(Long companyId);
 
     // Reports Queries
     @Query("SELECT COUNT(a) FROM Application a WHERE a.applicationStatus = 'SELECTED' AND YEAR(a.appliedAt) = :year")

@@ -6,6 +6,7 @@ import com.bridge.placement.entity.Company;
 import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.security.services.BridgeUserDetails;
 import com.bridge.placement.service.CompanyService;
+import com.bridge.placement.repository.ApplicationRepository;
 import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.repository.JobRepository;
 import com.bridge.placement.enums.JobStatus;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +34,7 @@ public class CompanyController {
     private final CompanyService companyService;
     private final PlacementOfficerRepository placementOfficerRepository;
     private final JobRepository jobRepository;
+    private final ApplicationRepository applicationRepository;
 
     // Company Endpoints
     @PostMapping("/company/create-placement-officer")
@@ -69,9 +72,19 @@ public class CompanyController {
         Map<String, Object> stats = new HashMap<>();
         List<PlacementOfficer> officers = placementOfficerRepository.findByCompanyId(userDetails.getId());
         stats.put("activeOfficers", officers.stream().filter(PlacementOfficer::isActive).count());
-        stats.put("activeJobs", 0); // Will be populated when company-job relationship is fully wired
-        stats.put("applicationsReceived", 0);
-        stats.put("studentsHiredThisMonth", 0);
+        stats.put("activeJobs", jobRepository.countByCompanyIdAndStatus(userDetails.getId(),
+                com.bridge.placement.enums.JobStatus.OPEN));
+        stats.put("applicationsReceived",
+                applicationRepository.countByJobCompanyId(userDetails.getId()));
+        stats.put("studentsHiredThisMonth", 0); // Requires month-based filter — future enhancement
         return ResponseEntity.ok(Map.of("stats", stats));
+    }
+
+    @PutMapping("/company/officer/{officerId}/deactivate")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<MessageResponse> deactivateOfficer(
+            @PathVariable Long officerId,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        return ResponseEntity.ok(companyService.deactivateOfficer(userDetails.getId(), officerId));
     }
 }

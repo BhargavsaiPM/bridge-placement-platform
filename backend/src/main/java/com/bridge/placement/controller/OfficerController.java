@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/officer")
 @RequiredArgsConstructor
@@ -29,5 +31,17 @@ public class OfficerController {
             @Valid @RequestBody UpdateOfficerProfileRequest request,
             @AuthenticationPrincipal BridgeUserDetails userDetails) {
         return ResponseEntity.ok(officerService.updateOfficerProfile(userDetails.getId(), request));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        String newPassword = body.get("newPassword");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "newPassword is required"));
+        }
+        officerService.changePassword(userDetails.getId(), newPassword);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 }

@@ -6,9 +6,13 @@ import com.bridge.placement.dto.request.RegisterUserRequest;
 import com.bridge.placement.dto.response.AuthResponse;
 import com.bridge.placement.dto.response.MessageResponse;
 import com.bridge.placement.entity.Company;
+import com.bridge.placement.entity.LoginLog;
+import com.bridge.placement.entity.OtpToken;
 import com.bridge.placement.entity.User;
 import com.bridge.placement.enums.Role;
 import com.bridge.placement.repository.CompanyRepository;
+import com.bridge.placement.repository.LoginLogRepository;
+import com.bridge.placement.repository.OtpTokenRepository;
 import com.bridge.placement.repository.UserRepository;
 import com.bridge.placement.security.jwt.JwtUtils;
 import com.bridge.placement.security.services.BridgeUserDetails;
@@ -24,7 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,10 +46,44 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final JavaMailSender mailSender;
+    private final OtpTokenRepository otpTokenRepository;  // B1/B2 fix
+    private final LoginLogRepository loginLogRepository;   // N5 fix
+
+    // B38: Simple in-memory rate limiting
+    private final Map<String, Integer> loginAttempts = new ConcurrentHashMap<>();
+    private final Map<String, LocalDateTime> lockTime = new ConcurrentHashMap<>();
+    private static final int MAX_ATTEMPT = 5;
+    private static final int LOCK_DURATION_MINUTES = 15;
 
     public AuthResponse authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        String email = loginRequest.getEmail();
+
+        if (lockTime.containsKey(email)) {
+            if (lockTime.get(email).plusMinutes(LOCK_DURATION_MINUTES).isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Account locker: Too many failed attempts. Try again in 15 minutes.");
+            } else {
+                lockTime.remove(email);
+                loginAttempts.remove(email);
+            }
+        }
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, loginRequest.getPassword()));
+        } catch (Exception e) {
+            int attempts = loginAttempts.getOrDefault(email, 0) + 1;
+            if (attempts >= MAX_ATTEMPT) {
+                lockTime.put(email, LocalDateTime.now());
+                throw new RuntimeException("Account locker: Too many failed attempts. Try again in 15 minutes.");
+            }
+            loginAttempts.put(email, attempts);
+            throw e; // rethrow the original exception (e.g., BadCredentialsException)
+        }
+
+        // Reset on successful login
+        loginAttempts.remove(email);
+        lockTime.remove(email);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
@@ -49,6 +92,10 @@ public class AuthService {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
+
+        // N5 fix: Log every successful login
+        String role = roles.isEmpty() ? "UNKNOWN" : roles.get(0);
+        loginLogRepository.save(new LoginLog(userDetails.getEmail(), role, "via-app"));
 
         return new AuthResponse(jwt,
                 userDetails.getId(),
@@ -160,8 +207,6 @@ public class AuthService {
 
     // --- Forgot / Reset Password Logic ---
 
-    public static final java.util.Map<String, String> otpStorage = new java.util.concurrent.ConcurrentHashMap<>();
-
     public MessageResponse forgotPassword(String email) {
         boolean existsUser = userRepository.existsByEmail(email);
         boolean existsCompany = companyRepository.existsByDomainEmail(email);
@@ -171,16 +216,19 @@ public class AuthService {
         }
 
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
-        otpStorage.put(email, otp);
+
+        // B1 fix: Store OTP in DB instead of in-memory Map
+        otpTokenRepository.deleteByEmail(email); // clear any old OTPs
+        otpTokenRepository.save(new OtpToken(email, otp));
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
             message.setSubject("Bridge Placement: Password Reset OTP");
-            message.setText("Your OTP for password recovery is: " + otp + "\n\nPlease do not share this with anyone.");
+            message.setText("Your OTP for password recovery is: " + otp + "\n\nThis OTP expires in 10 minutes. Do not share it with anyone.");
             mailSender.send(message);
         } catch (Exception e) {
-            System.err.println("Email sending failed due to config: " + e.getMessage());
+            System.err.println("Email sending failed: " + e.getMessage());
         }
 
         System.out.println("==========================================");
@@ -191,10 +239,19 @@ public class AuthService {
     }
 
     public MessageResponse resetPassword(String email, String otp, String newPassword) {
-        String storedOtp = otpStorage.get(email);
+        // B1/B2 fix: Fetch OTP from DB with expiry check
+        OtpToken storedToken = otpTokenRepository.findTopByEmailOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired OTP"));
 
-        if (storedOtp == null || !storedOtp.equals(otp)) {
-            throw new RuntimeException("Invalid or expired OTP");
+        // B2 fix: OTP expires after 10 minutes
+        long minutesElapsed = ChronoUnit.MINUTES.between(storedToken.getCreatedAt(), LocalDateTime.now());
+        if (minutesElapsed > 10) {
+            otpTokenRepository.deleteByEmail(email);
+            throw new RuntimeException("OTP has expired. Please request a new one.");
+        }
+
+        if (!storedToken.getOtp().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
         }
 
         if (userRepository.existsByEmail(email)) {
@@ -209,8 +266,9 @@ public class AuthService {
             throw new RuntimeException("User not found via email");
         }
 
-        otpStorage.remove(email);
+        otpTokenRepository.deleteByEmail(email); // cleanup after successful reset
 
         return new MessageResponse("Password reset successfully! You can now login.");
     }
 }
+

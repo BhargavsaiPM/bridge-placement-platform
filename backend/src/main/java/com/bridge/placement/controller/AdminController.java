@@ -2,21 +2,29 @@ package com.bridge.placement.controller;
 
 import com.bridge.placement.entity.Application;
 import com.bridge.placement.entity.Company;
+import com.bridge.placement.entity.LoginLog;
 import com.bridge.placement.entity.User;
 import com.bridge.placement.enums.ApplicationStatus;
 import com.bridge.placement.enums.JobStatus;
 import com.bridge.placement.repository.ApplicationRepository;
 import com.bridge.placement.repository.CompanyRepository;
 import com.bridge.placement.repository.JobRepository;
+import com.bridge.placement.repository.LoginLogRepository;
 import com.bridge.placement.repository.UserRepository;
 import com.bridge.placement.repository.AdminRepository;
 import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.security.services.BridgeUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,6 +33,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')") // B29 fix: class-level authorization
 public class AdminController {
 
     private final UserRepository userRepository;
@@ -34,6 +43,7 @@ public class AdminController {
     private final ApplicationRepository applicationRepository;
     private final PlacementOfficerRepository placementOfficerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginLogRepository loginLogRepository; // N5/B25 fix
 
     // ==================== Dashboard Stats ====================
     @GetMapping("/stats")
@@ -235,20 +245,26 @@ public class AdminController {
     }
 
     @GetMapping("/login-logs")
-    public ResponseEntity<List<Map<String, Object>>> getLoginLogs() {
-        // No login tracking table exists yet — return empty
-        return ResponseEntity.ok(List.of());
+    public ResponseEntity<List<LoginLog>> getLoginLogs() {
+        // N5/B25 fix: Real login audit trail from DB
+        return ResponseEntity.ok(loginLogRepository.findAllByOrderByLoginTimeDesc());
     }
 
     @GetMapping("/server-load")
     public ResponseEntity<Map<String, Object>> getServerLoad() {
+        // B26 fix: Use OperatingSystemMXBean for real system load
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        double systemLoad = osBean.getSystemLoadAverage(); // returns -1 if unavailable
         Runtime runtime = Runtime.getRuntime();
         long totalMem = runtime.totalMemory();
         long freeMem = runtime.freeMemory();
-        int cpuPercent = (int) ((totalMem - freeMem) * 100 / totalMem);
+        long usedMemMB = (totalMem - freeMem) / (1024 * 1024);
+        long totalMemMB = totalMem / (1024 * 1024);
         return ResponseEntity.ok(Map.of(
-                "cpu", cpuPercent,
-                "memory", (totalMem - freeMem) / (1024 * 1024) + " MB",
+                "cpuLoad", systemLoad >= 0 ? String.format("%.1f%%", systemLoad * 100) : "N/A",
+                "memoryUsedMB", usedMemMB,
+                "memoryTotalMB", totalMemMB,
+                "memoryUsagePercent", (int) ((double) usedMemMB / totalMemMB * 100),
                 "uptime", "Running"));
     }
 
@@ -282,9 +298,14 @@ public class AdminController {
 
     // ==================== Kanban ====================
     @GetMapping("/student-progress")
-    public ResponseEntity<List<Map<String, Object>>> getStudentProgress() {
-        List<Application> allApps = applicationRepository.findAll();
-        List<Map<String, Object>> result = allApps.stream().map(app -> {
+    public ResponseEntity<Map<String, Object>> getStudentProgress(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> appPage = applicationRepository.findAll(pageable);
+        
+        List<Map<String, Object>> result = appPage.getContent().stream().map(app -> {
             Map<String, Object> entry = new HashMap<>();
             entry.put("id", app.getId());
             entry.put("name", app.getUser() != null ? app.getUser().getFullName() : "Unknown");
@@ -294,7 +315,14 @@ public class AdminController {
             entry.put("score", app.getAilsScore());
             return entry;
         }).collect(Collectors.toList());
-        return ResponseEntity.ok(result);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("applications", result);
+        response.put("currentPage", appPage.getNumber());
+        response.put("totalItems", appPage.getTotalElements());
+        response.put("totalPages", appPage.getTotalPages());
+        
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/student-progress/{id}")

@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "placement_officers")
@@ -53,4 +54,11 @@ public class PlacementOfficer extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.PLACEMENT_OFFICER;
+
+    // N6: Force officer to change password on first login
+    @Column(nullable = false)
+    private boolean requiresPasswordChange = true;
+
+    // N4: Track when officer was last active
+    private LocalDateTime lastSeen;
 }

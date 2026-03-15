@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user/notifications")
@@ -35,5 +36,12 @@ public class NotificationController {
     public ResponseEntity<Void> markAsRead(@RequestParam Long notificationId) {
         notificationService.markAsRead(notificationId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread-count")
+    @PreAuthorize("hasAnyRole('USER', 'PLACEMENT_OFFICER', 'COMPANY')")
+    public ResponseEntity<Map<String, Long>> getUnreadCount() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(Map.of("count", notificationService.getUnreadCount(email)));
     }
 }

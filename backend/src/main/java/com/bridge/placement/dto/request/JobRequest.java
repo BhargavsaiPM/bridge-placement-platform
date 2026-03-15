@@ -22,6 +22,8 @@ public class JobRequest {
     @NotBlank
     private String requiredSkills;
 
+    private String preferredSkills; // Optional bonus skills (B17 fix)
+
     @NotNull
     private Integer experienceRequired;
 
@@ -43,5 +45,5 @@ public class JobRequest {
     private Integer maxApplicants;
 
     // Rounds
-    private List<String> rounds; // Simple list of round names or objects
+    private List<String> rounds;
 }

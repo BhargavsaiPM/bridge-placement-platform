@@ -65,11 +65,17 @@ public class JobVectorizer {
      */
     public List<String> extractDescriptionKeywords(Job job) {
         String text = buildTextCorpus(job);
-        // Common stop words to filter
+        // Expanded common stop words list
         List<String> stopWords = List.of(
                 "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
-                "of", "with", "is", "are", "was", "be", "as", "by", "we", "our",
-                "you", "your", "this", "that", "will", "can", "not", "have", "has");
+                "of", "with", "is", "are", "was", "were", "be", "as", "by", "we", "our",
+                "you", "your", "this", "that", "these", "those", "will", "can", "not",
+                "have", "has", "had", "do", "does", "did", "from", "up", "down", "out",
+                "about", "into", "over", "after", "some", "such", "no", "yes", "how",
+                "who", "what", "where", "when", "why", "their", "they", "them", "it",
+                "its", "he", "him", "his", "she", "her", "hers", "all", "any", "both",
+                "each", "few", "more", "most", "other", "some", "such", "no", "nor");
+                
         return Arrays.stream(text.split("[\\s,;:.!?()\\[\\]{}\"]+"))
                 .map(String::toLowerCase)
                 .filter(w -> w.length() > 2 && !stopWords.contains(w))

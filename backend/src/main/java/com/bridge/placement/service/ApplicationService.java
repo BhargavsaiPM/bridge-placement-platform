@@ -14,6 +14,8 @@ import com.bridge.placement.service.ails.AilsResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,8 +73,8 @@ public class ApplicationService {
                 ails.getScore(), ails.getMatchLevel()));
     }
 
-    public List<Application> getApplicationsForJob(Long jobId) {
-        return applicationRepository.findByJobId(jobId);
+    public Page<Application> getApplicationsForJob(Long jobId, Pageable pageable) {
+        return applicationRepository.findByJobId(jobId, pageable);
     }
 
     /**
@@ -108,11 +110,18 @@ public class ApplicationService {
         application.setApplicationStatus(status);
         applicationRepository.save(application);
 
+        // B15 Fix: Map each status to the correct notification type
+        NotificationType notifType = switch (status) {
+            case SELECTED -> NotificationType.SELECTION;
+            case REJECTED -> NotificationType.REJECTION;
+            default -> NotificationType.STATUS_CHANGE; // APPLIED, SHORTLISTED, INTERVIEW
+        };
+
         notificationService.createNotification(
                 application.getUser().getEmail(),
                 "Application Status Update",
                 "Your application for " + application.getJob().getTitle() + " is now " + status,
-                status == ApplicationStatus.SELECTED ? NotificationType.SELECTION : NotificationType.REJECTION);
+                notifType);
 
         return new MessageResponse("Status Updated to " + status);
     }
@@ -149,5 +158,14 @@ public class ApplicationService {
         if (score >= 45)
             return "MEDIUM";
         return "LOW";
+    }
+
+    @Transactional
+    public MessageResponse setRemark(Long applicationId, String remark) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        application.setRemarksByOfficer(remark);
+        applicationRepository.save(application);
+        return new MessageResponse("Remark saved successfully");
     }
 }
