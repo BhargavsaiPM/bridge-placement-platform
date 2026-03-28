@@ -16,7 +16,6 @@ const NAV_ITEMS = [
     { path: '/admin/approvals', icon: ClipboardCheck, label: 'Approvals' },
     { path: '/admin/analytics', icon: BarChart2, label: 'Analytics' },
     { path: '/admin/activity', icon: Activity, label: 'Activity' },
-    { path: '/admin/kanban', icon: KanbanSquare, label: 'Kanban' },
     { path: '/admin/reports', icon: FileText, label: 'Reports' },
 ];
 
@@ -35,9 +34,9 @@ export default function Sidebar() {
                 <div className="px-6 mb-8">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_15px_rgba(77,163,255,0.3)]">
-                            <span className="font-bold text-white text-lg">B</span>
+                            <span className="font-bold text-white text-lg">A</span>
                         </div>
-                        <span className="text-xl font-bold tracking-wider text-text-primary">BRIDGE</span>
+                        <span className="text-xl font-bold tracking-wider text-text-primary">ADMIN</span>
                     </div>
                 </div>
 

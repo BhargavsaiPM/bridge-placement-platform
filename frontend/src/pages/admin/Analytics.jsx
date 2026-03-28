@@ -3,7 +3,7 @@ import { adminApi } from '../../api/adminApi';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-    LineChart, Line, AreaChart, Area, PieChart, Pie, Cell
+    AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
 
 export default function Analytics() {
@@ -18,8 +18,6 @@ export default function Analytics() {
             adminApi.getStudentPerformance().catch(() => ({ data: [] })),
             adminApi.getRecruiterEngagement().catch(() => ({ data: [] }))
         ]).then(([placementsRes, studentsRes, recruitersRes]) => {
-            // Assuming array data for charts. If objects, it needs transformation.
-            // We will safeguard by forcing array.
             setPlacementStats(Array.isArray(placementsRes.data) ? placementsRes.data : []);
             setStudentPerf(Array.isArray(studentsRes.data) ? studentsRes.data : []);
             setRecruiterEng(Array.isArray(recruitersRes.data) ? recruitersRes.data : []);
@@ -48,11 +46,10 @@ export default function Analytics() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent">
                     Platform Analytics
                 </h1>
-                <p className="text-text-secondary mt-1 text-sm">In-depth insights into placements and performance.</p>
+                <p className="text-text-secondary mt-1 text-sm">Visual insights into placements, performance, and engagement.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 {/* Placement Stats Chart */}
                 <div className="glass-panel p-6">
                     <h3 className="text-lg font-bold mb-6">Placement Trends</h3>
@@ -69,10 +66,7 @@ export default function Analytics() {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                                     <XAxis dataKey="name" stroke="#9FB0D9" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#9FB0D9" fontSize={12} tickLine={false} axisLine={false} />
-                                    <RechartsTooltip
-                                        contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }}
-                                        itemStyle={{ color: '#E6ECFF' }}
-                                    />
+                                    <RechartsTooltip contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }} itemStyle={{ color: '#E6ECFF' }} />
                                     <Area type="monotone" dataKey="value" stroke="#4DA3FF" fillOpacity={1} fill="url(#colorPlacements)" strokeWidth={2} />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -92,10 +86,7 @@ export default function Analytics() {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                                     <XAxis dataKey="name" stroke="#9FB0D9" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#9FB0D9" fontSize={12} tickLine={false} axisLine={false} />
-                                    <RechartsTooltip
-                                        cursor={{ fill: '#ffffff05' }}
-                                        contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }}
-                                    />
+                                    <RechartsTooltip cursor={{ fill: '#ffffff05' }} contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }} />
                                     <Bar dataKey="value" fill="#7B61FF" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
@@ -125,9 +116,7 @@ export default function Analytics() {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <RechartsTooltip
-                                        contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }}
-                                    />
+                                    <RechartsTooltip contentStyle={{ backgroundColor: '#0F1629', borderColor: '#ffffff10', borderRadius: '8px' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
@@ -135,7 +124,6 @@ export default function Analytics() {
                         )}
                     </div>
                 </div>
-
             </div>
         </motion.div>
     );

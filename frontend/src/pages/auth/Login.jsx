@@ -54,7 +54,14 @@ export default function Login() {
             }
         } catch (err) {
             console.error("Login failed", err);
-            setError("Invalid credentials or server error. Please try again.");
+            const backendError = err.response?.data?.message || err.response?.data;
+            if (typeof backendError === 'string' && backendError.toLowerCase().includes('blocked')) {
+                setError(backendError);
+            } else if (typeof backendError === 'string' && backendError.length < 100) {
+                setError(backendError);
+            } else {
+                setError("Invalid credentials or server error. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -137,7 +144,7 @@ export default function Login() {
                             {/* Email Field with Floating Label */}
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <Mail className="h-5 w-5 text-text-muted group-focus-within:text-primary transition-colors" />
+                                    <Mail className="h-5 w-5 text-white/50 group-focus-within:text-primary transition-colors" />
                                 </div>
                                 <input
                                     type="email"
@@ -150,8 +157,8 @@ export default function Login() {
                                 />
                                 <label
                                     htmlFor="email"
-                                    className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none 
-                                        ${email ? 'text-xs top-2 -translate-y-0 text-text-secondary' : 'text-base top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`
+                                    className={`absolute left-12 transform transition-all duration-300 pointer-events-none 
+                                        ${email ? 'text-xs top-2 -translate-y-0 text-white/80' : 'text-base top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`
                                     }
                                 >
                                     Email Address
@@ -161,7 +168,7 @@ export default function Login() {
                             {/* Password Field with Floating Label and Toggle */}
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <Lock className="h-5 w-5 text-text-muted group-focus-within:text-primary transition-colors" />
+                                    <Lock className="h-5 w-5 text-white/50 group-focus-within:text-primary transition-colors" />
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -174,8 +181,8 @@ export default function Login() {
                                 />
                                 <label
                                     htmlFor="password"
-                                    className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none
-                                        ${password ? 'text-xs top-2 -translate-y-0 text-text-secondary' : 'text-base top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`
+                                    className={`absolute left-12 transform transition-all duration-300 pointer-events-none
+                                        ${password ? 'text-xs top-2 -translate-y-0 text-white/80' : 'text-base top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`
                                     }
                                 >
                                     Password
@@ -184,7 +191,7 @@ export default function Login() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-text-muted hover:text-white transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-white transition-colors"
                                     tabIndex="-1"
                                 >
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

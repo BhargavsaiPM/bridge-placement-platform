@@ -29,10 +29,16 @@ export const adminApi = {
     getLoginLogs: () => api.get('/admin/login-logs'),
     getServerLoad: () => api.get('/admin/server-load'),
 
-    // Management
+    // Management / Lists
+    getAllUsers: () => api.get('/admin/users'),
+    getAllCompanies: () => api.get('/admin/companies'),
+    getAllJobs: () => api.get('/admin/jobs'),
     deleteUser: (id) => api.delete(`/admin/user/${id}`),
     deleteCompany: (id) => api.delete(`/admin/company/${id}`),
+    deleteJob: (id) => api.delete(`/admin/job/${id}`),
     deleteOfficer: (id) => api.delete(`/admin/officer/${id}`),
+    blockJob: (id) => api.post(`/admin/job/${id}/block`),
+    unblockJob: (id) => api.post(`/admin/job/${id}/unblock`),
 
     // Kanban
     getStudentProgress: () => api.get('/admin/student-progress'),
@@ -41,4 +47,8 @@ export const adminApi = {
     // Reports
     exportPdf: () => api.get('/admin/export/pdf', { responseType: 'blob' }),
     exportExcel: () => api.get('/admin/export/excel', { responseType: 'blob' }),
+
+    // Profile
+    getProfile: () => api.get('/admin/profile'),
+    updateProfile: (data) => api.put('/admin/profile', data),
 };

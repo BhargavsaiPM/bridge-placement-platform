@@ -29,8 +29,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import Approvals from './pages/admin/Approvals';
 import AdminAnalytics from './pages/admin/Analytics';
 import Activity from './pages/admin/Activity';
-import Kanban from './pages/admin/Kanban';
 import Reports from './pages/admin/Reports';
+import AdminProfile from './pages/admin/Profile';
 
 // Company Pages
 import CompanyDashboard from './pages/company/Dashboard';
@@ -74,10 +74,10 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="profile" element={<AdminProfile />} />
           <Route path="approvals" element={<Approvals />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="activity" element={<Activity />} />
-          <Route path="kanban" element={<Kanban />} />
           <Route path="reports" element={<Reports />} />
         </Route>
 

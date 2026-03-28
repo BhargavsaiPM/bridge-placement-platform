@@ -24,6 +24,9 @@ public class Admin extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "profile_photo")
+    private String profilePhoto;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.SUPER_ADMIN;

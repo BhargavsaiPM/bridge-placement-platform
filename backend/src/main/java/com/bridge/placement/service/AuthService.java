@@ -67,6 +67,19 @@ public class AuthService {
             }
         }
 
+        // B40: Specific Block checks per explicit user request
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.isBlocked()) {
+                throw new RuntimeException("Your account has been blocked by admin");
+            }
+        });
+
+        companyRepository.findByDomainEmail(email).ifPresent(company -> {
+            if (company.isBlocked()) {
+                throw new RuntimeException("Your account has been blocked by admin");
+            }
+        });
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(

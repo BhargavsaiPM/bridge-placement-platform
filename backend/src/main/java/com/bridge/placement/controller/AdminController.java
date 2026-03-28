@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')") // B29 fix: class-level authorization
+@PreAuthorize("hasRole('SUPER_ADMIN')") // B29 fix: class-level authorization
 public class AdminController {
 
     private final UserRepository userRepository;
@@ -44,6 +44,35 @@ public class AdminController {
     private final PlacementOfficerRepository placementOfficerRepository;
     private final PasswordEncoder passwordEncoder;
     private final LoginLogRepository loginLogRepository; // N5/B25 fix
+
+    // ==================== Admin Profile ====================
+    @GetMapping("/profile")
+    public ResponseEntity<Map<String, Object>> getProfile(@AuthenticationPrincipal BridgeUserDetails userDetails) {
+        Optional<com.bridge.placement.entity.Admin> adminOpt = adminRepository.findById(userDetails.getId());
+        if (adminOpt.isPresent()) {
+            com.bridge.placement.entity.Admin admin = adminOpt.get();
+            return ResponseEntity.ok(Map.of(
+                "name", admin.getName(),
+                "email", admin.getEmail(),
+                "profilePhoto", admin.getProfilePhoto() != null ? admin.getProfilePhoto() : "",
+                "roleType", admin.getRole().name()
+            ));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> body, @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        Optional<com.bridge.placement.entity.Admin> adminOpt = adminRepository.findById(userDetails.getId());
+        if (adminOpt.isPresent()) {
+            com.bridge.placement.entity.Admin admin = adminOpt.get();
+            if (body.containsKey("name")) admin.setName(body.get("name"));
+            if (body.containsKey("profilePhoto")) admin.setProfilePhoto(body.get("profilePhoto"));
+            adminRepository.save(admin);
+            return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     // ==================== Dashboard Stats ====================
     @GetMapping("/stats")
@@ -68,6 +97,7 @@ public class AdminController {
         if (companyOpt.isPresent()) {
             Company company = companyOpt.get();
             company.setApproved(true);
+            company.setBlocked(false);
             companyRepository.save(company);
             return ResponseEntity.ok(Map.of("message", "Company approved successfully"));
         }
@@ -90,6 +120,7 @@ public class AdminController {
         if (companyOpt.isPresent()) {
             Company company = companyOpt.get();
             company.setApproved(false);
+            company.setBlocked(true);
             companyRepository.save(company);
             return ResponseEntity.ok(Map.of("message", "Company blocked"));
         }
@@ -213,6 +244,48 @@ public class AdminController {
         return ResponseEntity.notFound().build();
     }
 
+    // ==================== Data Management Lists (Analytics) ====================
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    @GetMapping("/companies")
+    public ResponseEntity<List<Company>> getAllCompanies() {
+        return ResponseEntity.ok(companyRepository.findAll());
+    }
+
+    @GetMapping("/jobs")
+    public ResponseEntity<List<com.bridge.placement.entity.Job>> getAllJobs() {
+        return ResponseEntity.ok(jobRepository.findAll());
+    }
+
+    @PostMapping("/job/{id}/block")
+    public ResponseEntity<?> blockJob(@PathVariable Long id) {
+        Optional<com.bridge.placement.entity.Job> jobOpt = jobRepository.findById(id);
+        if (jobOpt.isPresent()) {
+            com.bridge.placement.entity.Job job = jobOpt.get();
+            job.setBlockedByAdmin(true);
+            job.setStatus(JobStatus.CLOSED);
+            jobRepository.save(job);
+            return ResponseEntity.ok(Map.of("message", "Job closed by admin"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/job/{id}/unblock")
+    public ResponseEntity<?> unblockJob(@PathVariable Long id) {
+        Optional<com.bridge.placement.entity.Job> jobOpt = jobRepository.findById(id);
+        if (jobOpt.isPresent()) {
+            com.bridge.placement.entity.Job job = jobOpt.get();
+            job.setBlockedByAdmin(false);
+            job.setStatus(JobStatus.OPEN);
+            jobRepository.save(job);
+            return ResponseEntity.ok(Map.of("message", "Job reopened successfully"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     // ==================== Activity ====================
     @GetMapping("/active-users")
     public ResponseEntity<List<Map<String, Object>>> getActiveUsers() {
@@ -283,6 +356,15 @@ public class AdminController {
         if (companyRepository.existsById(id)) {
             companyRepository.deleteById(id);
             return ResponseEntity.ok(Map.of("message", "Company deleted"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/job/{id}")
+    public ResponseEntity<?> deleteJob(@PathVariable Long id) {
+        if (jobRepository.existsById(id)) {
+            jobRepository.deleteById(id);
+            return ResponseEntity.ok(Map.of("message", "Job deleted"));
         }
         return ResponseEntity.notFound().build();
     }

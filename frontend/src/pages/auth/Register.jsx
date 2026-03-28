@@ -257,8 +257,8 @@ export default function Register() {
     // RENDER HELPERS
     // ==========================================
 
-    const inputClassWithIcon = "w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base";
-    const inputClassNoIcon = "w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base";
+    const inputClassWithIcon = "peer w-full pl-11 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base";
+    const inputClassNoIcon = "peer w-full px-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base";
 
     // ==========================================
     // RENDER
@@ -369,49 +369,70 @@ export default function Register() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type="text" placeholder="First Name *" required className={inputClassWithIcon}
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type="text" id="firstName" placeholder="First Name *" required className={inputClassWithIcon}
                                                 value={userData.firstName} onChange={e => setUserData({ ...userData, firstName: e.target.value })} />
+                                            <label htmlFor="firstName" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.firstName ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                First Name *
+                                            </label>
                                         </div>
                                         <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type="text" placeholder="Middle Name (Opt)" className={inputClassWithIcon}
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type="text" id="middleName" placeholder="Middle Name (Opt)" className={inputClassWithIcon}
                                                 value={userData.middleName} onChange={e => setUserData({ ...userData, middleName: e.target.value })} />
+                                            <label htmlFor="middleName" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.middleName ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Middle Name (Opt)
+                                            </label>
                                         </div>
                                         <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type="text" placeholder="Last Name *" required className={inputClassWithIcon}
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type="text" id="lastName" placeholder="Last Name *" required className={inputClassWithIcon}
                                                 value={userData.lastName} onChange={e => setUserData({ ...userData, lastName: e.target.value })} />
+                                            <label htmlFor="lastName" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.lastName ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Last Name *
+                                            </label>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="relative group">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type="email" placeholder="Personal Email *" required className={inputClassWithIcon}
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type="email" id="personalEmail" placeholder="Personal Email *" required className={inputClassWithIcon}
                                                 value={userData.email} onChange={e => setUserData({ ...userData, email: e.target.value })} />
+                                            <label htmlFor="personalEmail" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.email ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Personal Email *
+                                            </label>
                                         </div>
                                         <div className="relative group">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type="text" placeholder="Mobile Number *" required className={inputClassWithIcon}
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type="text" id="mobileNumber" placeholder="Mobile Number *" required className={inputClassWithIcon}
                                                 value={userData.mobile} onChange={e => setUserData({ ...userData, mobile: e.target.value })} />
+                                            <label htmlFor="mobileNumber" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.mobile ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Mobile Number *
+                                            </label>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type={showUserPass ? "text" : "password"} placeholder="Password *" required className={inputClassWithIcon}
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type={showUserPass ? "text" : "password"} id="userPass" placeholder="Password *" required className={inputClassWithIcon}
                                                 value={userData.password} onChange={e => setUserData({ ...userData, password: e.target.value })} />
-                                            <button type="button" onClick={() => setShowUserPass(!showUserPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors">
+                                            <label htmlFor="userPass" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.password ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Password *
+                                            </label>
+                                            <button type="button" onClick={() => setShowUserPass(!showUserPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors">
                                                 {showUserPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                             </button>
                                         </div>
                                         <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                            <input type={showUserConfirm ? "text" : "password"} placeholder="Confirm Password *" required className={inputClassWithIcon}
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                            <input type={showUserConfirm ? "text" : "password"} id="confirmPass" placeholder="Confirm Password *" required className={inputClassWithIcon}
                                                 value={userData.confirmPassword} onChange={e => setUserData({ ...userData, confirmPassword: e.target.value })} />
-                                            <button type="button" onClick={() => setShowUserConfirm(!showUserConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors">
+                                            <label htmlFor="confirmPass" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${userData.confirmPassword ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                                Confirm Password *
+                                            </label>
+                                            <button type="button" onClick={() => setShowUserConfirm(!showUserConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors">
                                                 {showUserConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                             </button>
                                         </div>
@@ -419,10 +440,10 @@ export default function Register() {
                                     <p className="text-xs text-text-muted mt-1 px-1">Status: {userData.password && validatePassword(userData.password) ? <span className="text-success font-medium">Strong</span> : <span className="text-danger font-medium">Weak (Needs Uppercase, Lowercase, Number, Symbol, Min 6 chars)</span>}</p>
 
                                     <div className="relative group">
-                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
                                         <input type="date" required className={inputClassWithIcon}
                                             value={userData.dob} onChange={e => setUserData({ ...userData, dob: e.target.value })} />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-text-muted pointer-events-none">Date of Birth</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-white/50 pointer-events-none">Date of Birth</span>
                                     </div>
 
                                     <button type="button" onClick={nextStep} className="w-full py-4 bg-white hover:bg-white/90 text-background rounded-xl font-bold transition-all flex items-center justify-center gap-2 mt-8 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98] text-lg">
@@ -490,7 +511,7 @@ export default function Register() {
                                             </label>
                                         </div>
 
-                                        <AddressFields value={collegeAddress} onChange={setCollegeAddress} title="College Address" />
+                                        <AddressFields value={collegeAddress} onChange={setCollegeAddress} title="College Address" hideDoorNumber={true} />
                                     </div>
                                 ) : (
                                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
@@ -546,7 +567,7 @@ export default function Register() {
                                                 </label>
                                             </div>
                                         </div>
-                                        <AddressFields value={professionalAddress} onChange={setProfessionalAddress} title="Company Address" />
+                                        <AddressFields value={professionalAddress} onChange={setProfessionalAddress} title="Company Address" hideDoorNumber={true} />
                                     </div>
                                 )}
 
@@ -643,41 +664,61 @@ export default function Register() {
                             <h3 className="text-xl font-bold text-white border-b border-white/10 pb-3 mb-5 flex items-center gap-2"><Building2 className="w-5 h-5 text-primary"/> Company Details</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" placeholder="Company Name *" required className={inputClassNoIcon}
-                                    value={companyData.name} onChange={e => setCompanyData({ ...companyData, name: e.target.value })} />
-
-                                <input type="email" placeholder="Domain Email *" required className={inputClassNoIcon}
-                                    value={companyData.domainEmail} onChange={e => setCompanyData({ ...companyData, domainEmail: e.target.value })} />
+                                <div className="relative group">
+                                    <input type="text" id="companyName" placeholder="Company Name *" required className={inputClassNoIcon}
+                                        value={companyData.name} onChange={e => setCompanyData({ ...companyData, name: e.target.value })} />
+                                    <label htmlFor="companyName" className={`absolute left-4 transform transition-all duration-300 pointer-events-none ${companyData.name ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                        Company Name *
+                                    </label>
+                                </div>
+                                <div className="relative group">
+                                    <input type="email" id="domainEmail" placeholder="Domain Email *" required className={inputClassNoIcon}
+                                        value={companyData.domainEmail} onChange={e => setCompanyData({ ...companyData, domainEmail: e.target.value })} />
+                                    <label htmlFor="domainEmail" className={`absolute left-4 transform transition-all duration-300 pointer-events-none ${companyData.domainEmail ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                        Domain Email *
+                                    </label>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                    <input type={showCompanyPass ? "text" : "password"} placeholder="Password *" required className={inputClassWithIcon}
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                    <input type={showCompanyPass ? "text" : "password"} id="companyPass" placeholder="Password *" required className={inputClassWithIcon}
                                         value={companyData.password} onChange={e => setCompanyData({ ...companyData, password: e.target.value })} />
-                                    <button type="button" onClick={() => setShowCompanyPass(!showCompanyPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors">
+                                    <label htmlFor="companyPass" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${companyData.password ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                        Password *
+                                    </label>
+                                    <button type="button" onClick={() => setShowCompanyPass(!showCompanyPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors">
                                         {showCompanyPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
                                 <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none" />
-                                    <input type={showCompanyConfirm ? "text" : "password"} placeholder="Confirm Password *" required className={inputClassWithIcon}
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                    <input type={showCompanyConfirm ? "text" : "password"} id="companyConfirmPass" placeholder="Confirm Password *" required className={inputClassWithIcon}
                                         value={companyData.confirmPassword} onChange={e => setCompanyData({ ...companyData, confirmPassword: e.target.value })} />
-                                    <button type="button" onClick={() => setShowCompanyConfirm(!showCompanyConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors">
+                                    <label htmlFor="companyConfirmPass" className={`absolute left-11 transform transition-all duration-300 pointer-events-none ${companyData.confirmPassword ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                        Confirm Password *
+                                    </label>
+                                    <button type="button" onClick={() => setShowCompanyConfirm(!showCompanyConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors">
                                         {showCompanyConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <select className={inputClassNoIcon} value={companyData.companyType} onChange={e => setCompanyData({ ...companyData, companyType: e.target.value })}>
+                                <select className={inputClassNoIcon + ' pb-2 pt-6'} style={{paddingTop: '1.5rem', paddingBottom: '0.5rem'}} value={companyData.companyType} onChange={e => setCompanyData({ ...companyData, companyType: e.target.value })}>
                                     <option value="STARTUP" className="bg-background">Startup</option>
                                     <option value="MNC" className="bg-background">MNC</option>
                                     <option value="SERVICE_BASED" className="bg-background">Service Based</option>
                                     <option value="PRODUCT_BASED" className="bg-background">Product Based</option>
                                 </select>
-                                <input type="text" placeholder="Industry Sector (e.g. IT, Finance)" className={inputClassNoIcon}
-                                    value={companyData.industrySector} onChange={e => setCompanyData({ ...companyData, industrySector: e.target.value })} />
+                                <div className="relative group">
+                                    <input type="text" id="industrySector" placeholder="Industry Sector (e.g. IT, Finance)" className={inputClassNoIcon}
+                                        value={companyData.industrySector} onChange={e => setCompanyData({ ...companyData, industrySector: e.target.value })} />
+                                    <label htmlFor="industrySector" className={`absolute left-4 transform transition-all duration-300 pointer-events-none ${companyData.industrySector ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
+                                        Industry Sector
+                                    </label>
+                                </div>
                             </div>
 
                             <div className="pt-2">

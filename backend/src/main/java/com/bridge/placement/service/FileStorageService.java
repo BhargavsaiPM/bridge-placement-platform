@@ -30,10 +30,10 @@ public class FileStorageService {
         // Normalize file name
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
 
-        // Validate File Type (JPG/PNG only)
+        // Validate File Type (JPG/PNG/PDF only)
         String contentType = file.getContentType();
-        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
-            throw new RuntimeException("Invalid file type. Only JPG and PNG are allowed.");
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("application/pdf"))) {
+            throw new RuntimeException("Invalid file type. Only JPG, PNG, and PDF are allowed.");
         }
 
         try {

@@ -55,6 +55,9 @@ public class Job extends BaseEntity {
 
     private Integer maxApplicants;
 
+    @Column(nullable = false)
+    private boolean blockedByAdmin = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private JobStatus status = JobStatus.DRAFT;

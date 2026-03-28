@@ -46,6 +46,9 @@ public class Company extends BaseEntity {
     @Column(nullable = false)
     private boolean approved = false;
 
+    @Column(nullable = false)
+    private boolean blocked = false;
+
     private boolean createdByAdmin = false;
 
     @Column(length = 1000)

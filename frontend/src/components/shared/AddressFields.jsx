@@ -3,7 +3,7 @@ import SearchableDropdown from './SearchableDropdown';
 import { Loader2 } from 'lucide-react';
 import api from '../../api/axios'; // Or use native fetch
 
-export default function AddressFields({ value, onChange, title = 'Address Details' }) {
+export default function AddressFields({ value, onChange, title = 'Address Details', hideDoorNumber = false }) {
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
@@ -224,19 +224,21 @@ export default function AddressFields({ value, onChange, title = 'Address Detail
             </div>
 
             {/* Door Number */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-xs font-medium text-text-secondary mb-1">Door / Flat No. *</label>
-                    <input
-                        type="text"
-                        value={value.doorNumber || ''}
-                        onChange={(e) => onChange({ ...value, doorNumber: e.target.value })}
-                        className={inputClass}
-                        placeholder="e.g. 101, A-Block"
-                        required
-                    />
+            {!hideDoorNumber && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Door / Flat No. *</label>
+                        <input
+                            type="text"
+                            value={value.doorNumber || ''}
+                            onChange={(e) => onChange({ ...value, doorNumber: e.target.value })}
+                            className={inputClass}
+                            placeholder="e.g. 101, A-Block"
+                            required
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

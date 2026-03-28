@@ -23,6 +23,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     long countByJobCompanyId(Long companyId);
 
     // Reports Queries
-    @Query("SELECT COUNT(a) FROM Application a WHERE a.applicationStatus = 'SELECTED' AND YEAR(a.appliedAt) = :year")
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.applicationStatus = 'SELECTED' AND EXTRACT(YEAR FROM a.appliedAt) = :year")
     Long countPlacedStudents(int year);
 }

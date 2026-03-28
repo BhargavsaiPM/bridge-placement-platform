@@ -150,6 +150,9 @@ public class JobService {
         if (!job.getCompany().getId().equals(companyId)) {
             throw new RuntimeException("Unauthorized: Job does not belong to this company");
         }
+        if (job.isBlockedByAdmin()) {
+            throw new RuntimeException("Cannot modify this job as it has been closed by admin.");
+        }
 
         updateJobFields(job, request);
         return jobRepository.save(job);
@@ -162,6 +165,9 @@ public class JobService {
 
         if (!job.getCompany().getId().equals(companyId)) {
             throw new RuntimeException("Unauthorized");
+        }
+        if (job.isBlockedByAdmin()) {
+            throw new RuntimeException("Cannot modify this job as it has been closed by admin.");
         }
 
         job.setStatus(JobStatus.CLOSED);
@@ -186,6 +192,9 @@ public class JobService {
         if (!job.getCompany().getId().equals(officer.getCompany().getId())) {
             throw new RuntimeException("Unauthorized: Job does not belong to your company");
         }
+        if (job.isBlockedByAdmin()) {
+            throw new RuntimeException("Cannot modify this job as it has been closed by admin.");
+        }
 
         updateJobFields(job, request);
         return jobRepository.save(job);
@@ -201,6 +210,9 @@ public class JobService {
 
         if (!job.getCompany().getId().equals(officer.getCompany().getId())) {
             throw new RuntimeException("Unauthorized");
+        }
+        if (job.isBlockedByAdmin()) {
+            throw new RuntimeException("Cannot modify this job as it has been closed by admin.");
         }
 
         job.setStatus(JobStatus.CLOSED);

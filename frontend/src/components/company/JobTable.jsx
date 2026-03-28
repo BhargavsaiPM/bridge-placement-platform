@@ -41,12 +41,21 @@ export default function JobTable({ jobs, onCloseJob, onEditJob }) {
                                     </div>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${job.status === 'CLOSED'
-                                        ? 'bg-danger/20 text-danger'
-                                        : 'bg-primary/20 text-primary'
-                                        }`}>
-                                        {job.status || 'OPEN'}
-                                    </span>
+                                    {job.blockedByAdmin ? (
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className="px-2 py-1 rounded-md text-xs font-bold bg-danger/20 text-danger border border-danger/30">
+                                                CLOSED BY ADMIN
+                                            </span>
+                                            <span className="text-[10px] text-danger/80">This application is closed by admin.</span>
+                                        </div>
+                                    ) : (
+                                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${job.status === 'CLOSED'
+                                            ? 'bg-text-secondary/20 text-text-secondary'
+                                            : 'bg-primary/20 text-primary'
+                                            }`}>
+                                            {job.status || 'OPEN'}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="p-4">
                                     <div className="flex items-center justify-end gap-2">
@@ -57,14 +66,16 @@ export default function JobTable({ jobs, onCloseJob, onEditJob }) {
                                         >
                                             <Eye className="w-4 h-4" />
                                         </button>
-                                        <button
-                                            onClick={() => onEditJob(job)}
-                                            className="p-1.5 text-text-secondary hover:text-warning transition-colors hover:bg-white/10 rounded-md"
-                                            title="Edit Job"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        {job.status !== 'CLOSED' && (
+                                        {!job.blockedByAdmin && (
+                                            <button
+                                                onClick={() => onEditJob(job)}
+                                                className="p-1.5 text-text-secondary hover:text-warning transition-colors hover:bg-white/10 rounded-md"
+                                                title="Edit Job"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        {job.status !== 'CLOSED' && !job.blockedByAdmin && (
                                             <button
                                                 onClick={() => onCloseJob(job.id)}
                                                 className="p-1.5 text-text-secondary hover:text-danger transition-colors hover:bg-white/10 rounded-md"
