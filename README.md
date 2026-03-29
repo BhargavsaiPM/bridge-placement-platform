@@ -1,157 +1,91 @@
 # Bridge Placement Platform
 
-A comprehensive platform for managing college placements, connecting students, companies, and placement officers. Built with Spring Boot backend and React frontend.
+A comprehensive platform for managing college placements, connecting students, companies, and placement officers. Built with a high-performance Spring Boot backend and a modern, glassy React frontend.
 
 ## Project Structure
 
 ### Backend
-- **Framework**: Spring Boot
+- **Framework**: Spring Boot 3.x
 - **Location**: `/backend`
 - **Build**: Maven (`pom.xml`)
 - **Java Package**: `com.bridge.placement`
-  - `config/` - Configuration classes
-  - `controller/` - REST API controllers
-  - `dto/` - Data Transfer Objects
-  - `entity/` - JPA entities
-  - `enums/` - Enumeration classes
-  - `exception/` - Custom exceptions
-  - `service/` - Business logic services
-  - `repository/` - Data access layer
+  - `config/` - Security, Data Initializer, and App configurations
+  - `controller/` - REST API controllers (Admin, Job, Application, Interview, Notification, etc.)
+  - `dto/` - Data Transfer Objects for API requests/responses
+  - `entity/` - JPA entities (PostgreSQL/H2 mapping)
+  - `enums/` - Enumerated types (Role, Status, Mode)
+  - `exception/` - Global exception handling
+  - `service/` - Core business logic implementation
+  - `repository/` - Spring Data JPA repositories
 
 ### Frontend
-- **Framework**: React + Vite
+- **Framework**: React + Vite (Fast HMR)
 - **Location**: `/frontend`
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
+- **Styling**: Vanilla CSS with modern Glassmorphism (Apple/Google inspired)
+- **Navigation**: React Router with Role-based protected routes
 - **Package Manager**: npm
 
 #### Frontend Structure
 - `src/`
-  - `api/` - API integration modules (authApi, companyApi, userApi, etc.)
-  - `components/` - Reusable React components
-  - `layout/` - Layout components (AdminLayout, CompanyLayout, etc.)
-  - `pages/` - Page components organized by user role
-    - `admin/` - Admin dashboard pages
-    - `auth/` - Authentication pages
-    - `company/` - Company-specific pages
-    - `officer/` - Placement officer pages
-    - `public/` - Public-facing pages
-    - `user/` - Student/user pages
-  - `assets/` - Static assets
-  - `App.jsx` - Main application component
-  - `main.jsx` - Application entry point
+  - `api/` - Modular API integration (Axios-based)
+  - `components/` - Reusable UI elements (Buttons, Inputs, Modals)
+  - `layout/` - Standardized Layouts (Sidebar on the left, Header on top)
+  - `pages/` - Role-specific views (Admin, Company, Officer, User, Public)
+  - `assets/` - Images, logos, and global styles
+  - `App.jsx` - Main application with Routing infrastructure
 
 ## User Roles
 
-The platform supports multiple user roles:
-- **Admin** - Platform administrators
-- **Company** - Recruiting companies
-- **Officer** - Placement officers
-- **User** - Students/applicants
-- **Public** - Unauthenticated users
+- **Admin**: Full platform management, user/company approvals, and system activity monitoring.
+- **Company**: Job posting, applicant screening, and recruitment cycle management.
+- **Officer**: Student/Job matching, interview scheduling, and placement reporting.
+- **User (Student)**: Profile management, job search, and application tracking.
+- **Public**: Access to browse jobs and basic platform information.
 
 ## Key Features
 
-- **Job Management** - Post and manage job openings
-- **Applications** - Student job applications
-- **Analytics** - Recruitment analytics and reporting
-- **Approvals** - Application approval workflows
-- **User Profiles** - Profile management for all users
-- **Activity Tracking** - Platform activity logs and timeline
+- **Job Management**: End-to-end recruitment workflow from posting to selection.
+- **Smart Applications**: Student tracking system with status updates and history.
+- **Interview Scheduling**: Integrated scheduling system for online (Google Meet) or offline interviews.
+- **Notification System**: Real-time alerts for interview invites, application status changes, and new job postings.
+- **Placement Reports**: Visual analytics for placement officers to track recruitment success rates.
+- **Advanced Admin Activity**: Detailed logs of every action taken on the platform for auditing.
+- **Responsive UI/UX**: Premium "Glassy" design adapted for all screen sizes.
+
+## Development Status
+
+- **Branching**: The project has been consolidated into a single **`main`** branch for streamlined development.
+- **Data**: Initialized with a high-quality dataset of 10+ records per entity (Students, Companies, Jobs) for immediate testing.
+- **UI**: Standardized Sidebar positions across all dashboards for a consistent user experience.
 
 ## Getting Started
 
 ### Prerequisites
-- Java 11+ (for backend)
-- Node.js 16+ and npm (for frontend)
-- Maven (for backend build)
+- Java 17+
+- Node.js 18+ and npm
+- Maven 3.8+
 
-### Backend Setup
+### Quick Start (Development)
 
-1. Navigate to the backend directory:
+1. **Backend**:
    ```bash
    cd backend
-   ```
-
-2. Build the project:
-   ```bash
-   mvn clean install
-   ```
-
-3. Run the application:
-   ```bash
    mvn spring-boot:run
    ```
+   *Available at http://localhost:8080*
 
-The backend will start on the configured port (check `src/main/resources/application.properties`).
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
+2. **Frontend**:
    ```bash
    cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
    npm install
-   ```
-
-3. Start the development server:
-   ```bash
    npm run dev
    ```
-
-4. Build for production:
-   ```bash
-   npm run build
-   ```
-
-The frontend will be available at the configured Vite server URL (typically `http://localhost:5173`).
-
-## Configuration
-
-### Backend Configuration
-- Application settings: `backend/src/main/resources/application.properties`
-- Database configuration
-- Server port configuration
-
-### Frontend Configuration
-- Vite config: `frontend/vite.config.js`
-- Tailwind CSS config: `frontend/tailwind.config.js`
-- ESLint config: `frontend/eslint.config.js`
-- PostCSS config: `frontend/postcss.config.js`
-- API endpoints: `frontend/src/api/` modules
+   *Available at http://localhost:5173*
 
 ## API Reference
 
-See [API_REFERENCE.md](API_REFERENCE.md) for detailed API documentation.
-
-## Documentation
-
-- [API Reference](API_REFERENCE.md)
-- [Website Guide](WEBSITE_GUIDE.md)
-- [Frontend README](frontend/README.md)
-
-## Build Output
-
-Build logs are available in:
-- `build_log.txt` - Root build log
-- `backend/build_log.txt` - Backend build logs
-- `frontend/build-log.txt` - Frontend build logs
-
-## Project Status
-
-Check build logs for any compilation or runtime issues during setup.
-
-## Contributing
-
-Please follow the project structure and coding conventions established in both backend and frontend modules.
-
-## Contact & Support
-
-For issues or questions, please refer to the project documentation and logs.
+Comprehensive API documentation is available at [API_REFERENCE.md](API_REFERENCE.md).
 
 ---
 
-**Last Updated**: February 2026
+**Last Updated**: March 2026
