@@ -2,12 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Search } from 'lucide-react';
 
 const PREDEFINED_SKILLS = [
-    "JavaScript", "Python", "Java", "C++", "C#", "Ruby", "PHP", "Swift", "Kotlin", "Go",
-    "React", "Angular", "Vue.js", "Node.js", "Express", "Django", "Flask", "Spring Boot",
-    "HTML", "CSS", "Tailwind CSS", "Bootstrap", "SQL", "MySQL", "PostgreSQL", "MongoDB",
-    "Redis", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Git", "GitHub", "GitLab",
-    "Agile", "Scrum", "Machine Learning", "Data Science", "AI", "DevOps", "Figma",
-    "UI/UX Design", "Project Management", "Communication", "Leadership", "Problem Solving"
+    "JavaScript", "TypeScript", "Python", "Java", "C", "C++", "C#", "Ruby", "PHP", "Swift", "Kotlin", "Go", "Rust",
+    "React", "Angular", "Vue.js", "Next.js", "Node.js", "Express", "NestJS", "Django", "Flask", "FastAPI", "Spring Boot",
+    "HTML", "CSS", "SASS", "Tailwind CSS", "Bootstrap", "Material UI",
+    "SQL", "MySQL", "PostgreSQL", "MongoDB", "Redis", "Oracle", "Firebase",
+    "REST APIs", "GraphQL", "Microservices", "JWT", "OAuth", "Postman",
+    "Git", "GitHub", "GitLab", "CI/CD", "Jenkins", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Linux",
+    "Data Structures", "Algorithms", "OOP", "DBMS", "Operating Systems", "Computer Networks",
+    "Testing", "Manual Testing", "Automation Testing", "Selenium", "JUnit", "Cypress",
+    "Machine Learning", "Deep Learning", "Data Science", "Data Analysis", "Power BI", "Tableau", "Excel",
+    "AI", "DevOps", "Figma", "UI/UX Design", "Project Management", "Agile", "Scrum",
+    "Communication", "Leadership", "Problem Solving", "Teamwork", "Critical Thinking"
 ];
 
 export default function SkillSelect({ selectedSkills, onChange }) {
@@ -72,7 +77,12 @@ export default function SkillSelect({ selectedSkills, onChange }) {
 
     return (
         <div className="w-full relative" ref={wrapperRef}>
-            <label className="block text-sm font-medium text-text-secondary mb-2">Skills</label>
+            <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-sm font-medium text-text-secondary">Skills</label>
+                <span className="text-xs text-text-secondary/80">
+                    Search and add from suggestions or type your own
+                </span>
+            </div>
 
             <div
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-primary/50 transition-all cursor-text text-sm"
@@ -100,6 +110,7 @@ export default function SkillSelect({ selectedSkills, onChange }) {
 
                 {/* Input Field */}
                 <div className="flex-1 min-w-[120px] flex items-center">
+                    <Search className="mr-2 h-4 w-4 flex-shrink-0 text-text-secondary" />
                     <input
                         type="text"
                         value={inputValue}
@@ -110,7 +121,7 @@ export default function SkillSelect({ selectedSkills, onChange }) {
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsOpen(true)}
                         className="w-full bg-transparent border-none outline-none text-white placeholder:text-text-secondary p-0"
-                        placeholder={selectedSkills.length === 0 ? "Search or type skills..." : ""}
+                        placeholder="Search skills like REST APIs, React, SQL..."
                     />
                 </div>
             </div>

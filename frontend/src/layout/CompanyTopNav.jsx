@@ -1,37 +1,104 @@
-import React from 'react';
-import { LogOut, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { LogOut } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { companyApi } from '../api/companyApi';
+
+const getCompanyInitial = (name) => {
+    const trimmedName = name?.trim();
+    return trimmedName ? trimmedName[0].toUpperCase() : 'C';
+};
+
+const getDisplayName = (name) => name?.trim() || 'Company';
+
+const getAssetUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `http://localhost:9092${url}`;
+};
 
 export default function CompanyTopNav() {
     const navigate = useNavigate();
+    const [profileData, setProfileData] = useState({
+        name: '',
+        companyType: 'COMPANY',
+        profilePhoto: null,
+    });
+
+    useEffect(() => {
+        const loadProfile = () => {
+            companyApi
+                .getProfile()
+                .then((res) => {
+                    if (res.data) {
+                        setProfileData({
+                            name: res.data.name || '',
+                            companyType: res.data.companyType?.replace(/_/g, ' ') || 'COMPANY',
+                            profilePhoto: res.data.profilePhoto || null,
+                        });
+                    }
+                })
+                .catch((err) => console.error('Failed to load company nav profile:', err));
+        };
+
+        loadProfile();
+        window.addEventListener('company-profile-updated', loadProfile);
+
+        return () => window.removeEventListener('company-profile-updated', loadProfile);
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
     };
 
+    const displayName = getDisplayName(profileData.name);
+    const companyInitial = getCompanyInitial(profileData.name);
+
     return (
-        <div className="fixed top-4 left-[250px] right-4 z-50">
-            <div className="glass-panel h-16 flex items-center justify-between px-6 bg-white/5 border-white/10 rounded-2xl backdrop-blur-lg">
-                <div className="flex items-center space-x-4">
-                    <span className="text-xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
-                        Company Portal
-                    </span>
+        <div className="fixed top-4 left-64 right-4 z-50">
+            <div className="glass-panel flex h-16 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-6">
+                <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-success/75">
+                        Company Space
+                    </p>
+                    <p className="truncate bg-gradient-to-r from-success to-primary bg-clip-text text-xl font-bold text-transparent">
+                        Company Dashboard
+                    </p>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors relative group">
-                        <User className="w-5 h-5 text-text-secondary group-hover:text-primary transition-colors duration-300" />
-                        <div className="absolute inset-0 rounded-full group-hover:shadow-[0_0_15px_rgba(77,163,255,0.5)] transition-shadow duration-300"></div>
-                    </button>
+                <div className="flex items-center gap-3">
+                    <Link
+                        to="/company/profile"
+                        className="group flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-white/[0.08]"
+                    >
+                        <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-success/50 bg-white/10">
+                            {profileData.profilePhoto ? (
+                                <img
+                                    src={getAssetUrl(profileData.profilePhoto)}
+                                    alt="Company Profile"
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <span className="text-sm font-bold text-success transition-colors duration-300 group-hover:text-white">
+                                    {companyInitial}
+                                </span>
+                            )}
+                        </div>
+                        <div className="hidden max-w-[160px] min-w-0 sm:block">
+                            <p className="truncate text-sm font-semibold text-white">{displayName}</p>
+                            <p className="truncate text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                                {profileData.companyType}
+                            </p>
+                        </div>
+                    </Link>
 
                     <button
                         onClick={handleLogout}
-                        className="p-2 hover:bg-danger/20 rounded-full transition-colors relative group"
+                        className="group relative rounded-full p-2 transition-colors hover:bg-danger/20"
                         title="Log out"
                     >
-                        <LogOut className="w-5 h-5 text-text-secondary group-hover:text-danger transition-colors duration-300" />
-                        <div className="absolute inset-0 rounded-full group-hover:shadow-[0_0_15px_rgba(255,90,122,0.5)] transition-shadow duration-300"></div>
+                        <LogOut className="relative z-10 h-5 w-5 text-text-secondary transition-colors duration-300 group-hover:text-danger" />
+                        <div className="absolute inset-0 rounded-full transition-shadow duration-300 group-hover:shadow-[0_0_15px_rgba(255,90,122,0.5)]" />
                     </button>
                 </div>
             </div>

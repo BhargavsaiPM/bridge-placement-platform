@@ -81,7 +81,10 @@ public class AdminController {
         stats.put("totalUsers", userRepository.count());
         stats.put("activeCompanies", companyRepository.countByApproved(true));
         stats.put("activeJobs", jobRepository.countByStatus(JobStatus.OPEN));
-        stats.put("pendingApprovals", companyRepository.countByApproved(false));
+        stats.put("pendingApprovals",
+                companyRepository.countByApproved(false)
+                        + userRepository.countByApproved(false)
+                        + placementOfficerRepository.countByApprovedFalseAndActiveTrue());
         return ResponseEntity.ok(stats);
     }
 
@@ -206,6 +209,47 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/officers/pending")
+    public ResponseEntity<List<com.bridge.placement.entity.PlacementOfficer>> getPendingOfficers() {
+        return ResponseEntity.ok(placementOfficerRepository.findByApprovedFalseAndActiveTrue());
+    }
+
+    @PostMapping("/officer/{id}/approve")
+    public ResponseEntity<?> approveOfficer(@PathVariable Long id) {
+        Optional<com.bridge.placement.entity.PlacementOfficer> officerOpt = placementOfficerRepository.findById(id);
+        if (officerOpt.isPresent()) {
+            com.bridge.placement.entity.PlacementOfficer officer = officerOpt.get();
+            officer.setApproved(true);
+            officer.setActive(true);
+            placementOfficerRepository.save(officer);
+            return ResponseEntity.ok(Map.of("message", "Officer approved successfully"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/officer/{id}/reject")
+    public ResponseEntity<?> rejectOfficer(@PathVariable Long id) {
+        Optional<com.bridge.placement.entity.PlacementOfficer> officerOpt = placementOfficerRepository.findById(id);
+        if (officerOpt.isPresent()) {
+            placementOfficerRepository.delete(officerOpt.get());
+            return ResponseEntity.ok(Map.of("message", "Officer rejected"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/officer/{id}/block")
+    public ResponseEntity<?> blockOfficer(@PathVariable Long id) {
+        Optional<com.bridge.placement.entity.PlacementOfficer> officerOpt = placementOfficerRepository.findById(id);
+        if (officerOpt.isPresent()) {
+            com.bridge.placement.entity.PlacementOfficer officer = officerOpt.get();
+            officer.setApproved(false);
+            officer.setActive(false);
+            placementOfficerRepository.save(officer);
+            return ResponseEntity.ok(Map.of("message", "Officer blocked"));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/user/{id}/approve")

@@ -56,7 +56,11 @@ export default function Applicants() {
     const handleUpdateStatus = async (applicationId, updateData) => {
         try {
             // Optimistic kanban update
-            setApplications(prev => prev.map(app => app.id === applicationId ? { ...app, ...updateData } : app));
+            setApplications(prev => prev.map(app => app.id === applicationId ? {
+                ...app,
+                ...updateData,
+                applicationStatus: updateData.status || app.applicationStatus,
+            } : app));
             await companyApi.updateApplicationStatus(applicationId, updateData);
         } catch (err) {
             console.error(err);

@@ -8,6 +8,7 @@ import UserLayout from './layout/UserLayout';
 
 import Home from './pages/public/Home';
 import JobSearch from './pages/public/JobSearch';
+import JobDetail from './pages/public/JobDetail';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -40,6 +41,7 @@ import Jobs from './pages/company/Jobs';
 import Applicants from './pages/company/Applicants';
 import SelectedStudents from './pages/company/SelectedStudents';
 import CompanyAnalytics from './pages/company/Analytics';
+import ManageJobDetail from './components/company/ManageJobDetail';
 
 function App() {
   return (
@@ -48,6 +50,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<JobSearch />} />
+        <Route path="/jobs/:id" element={<JobDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -57,6 +60,8 @@ function App() {
           <Route index element={<Navigate to="/user/dashboard" replace />} />
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="applications" element={<UserApplications />} />
+          <Route path="jobs" element={<JobSearch />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
           <Route path="profile" element={<UserProfile />} />
         </Route>
 
@@ -66,6 +71,7 @@ function App() {
           <Route path="dashboard" element={<OfficerDashboard />} />
           <Route path="profile" element={<OfficerProfile />} />
           <Route path="jobs" element={<OfficerJobs />} />
+          <Route path="jobs/:id" element={<ManageJobDetail role="officer" />} />
           <Route path="applicants" element={<OfficerApplicants />} />
           <Route path="students" element={<OfficerStudents />} />
         </Route>
@@ -88,6 +94,7 @@ function App() {
           <Route path="profile" element={<CompanyProfile />} />
           <Route path="officers" element={<Officers />} />
           <Route path="jobs" element={<Jobs />} />
+          <Route path="jobs/:id" element={<ManageJobDetail role="company" />} />
           <Route path="applicants" element={<Applicants />} />
           <Route path="students" element={<SelectedStudents />} />
           <Route path="analytics" element={<CompanyAnalytics />} />

@@ -14,4 +14,8 @@ public interface PlacementOfficerRepository extends JpaRepository<PlacementOffic
     boolean existsByEmail(String email);
 
     List<PlacementOfficer> findByCompanyId(Long companyId);
+
+    List<PlacementOfficer> findByApprovedFalseAndActiveTrue();
+
+    long countByApprovedFalseAndActiveTrue();
 }

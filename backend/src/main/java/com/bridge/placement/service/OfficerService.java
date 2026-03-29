@@ -29,10 +29,19 @@ public class OfficerService {
 
         officer.setName(request.getName());
         officer.setAge(request.getAge());
+        officer.setDateOfBirth(request.getDateOfBirth());
+        officer.setMobileNumber(request.getMobileNumber());
         officer.setJobRole(request.getJobRole());
-        officer.setWorkingSince(request.getWorkingSince());
         officer.setDepartment(request.getDepartment());
         officer.setBloodGroup(request.getBloodGroup());
+        officer.setDoorNumber(request.getDoorNumber());
+        officer.setStreetName(request.getStreetName());
+        officer.setLandmark(request.getLandmark());
+        officer.setCity(request.getCity());
+        officer.setDistrict(request.getDistrict());
+        officer.setState(request.getState());
+        officer.setPincode(request.getPincode());
+        officer.setCountry(request.getCountry());
 
         if (request.getProfilePhoto() != null && !request.getProfilePhoto().isBlank()) {
             officer.setProfilePhoto(request.getProfilePhoto());
@@ -40,7 +49,7 @@ public class OfficerService {
 
         String fullAddress = Stream.of(
                 request.getDoorNumber(), request.getStreetName(), request.getLandmark(),
-                request.getCity(), request.getState(), request.getPincode(), request.getCountry())
+                request.getCity(), request.getDistrict(), request.getState(), request.getPincode(), request.getCountry())
                 .filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
 
         officer.setAddress(fullAddress);
@@ -53,8 +62,26 @@ public class OfficerService {
         PlacementOfficer officer = officerRepository.findById(officerId)
                 .orElseThrow(() -> new RuntimeException("Officer not found"));
 
+        if (!officer.isRequiresPasswordChange()) {
+            throw new RuntimeException("Password has already been set. Contact your company admin to reset it.");
+        }
+
         officer.setPassword(passwordEncoder.encode(newPassword));
         officer.setRequiresPasswordChange(false);
+        officerRepository.save(officer);
+    }
+
+    @Transactional
+    public void resetOfficerPassword(Long companyId, Long officerId, String newTemporaryPassword) {
+        PlacementOfficer officer = officerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+
+        if (!officer.getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized: officer does not belong to your company");
+        }
+
+        officer.setPassword(passwordEncoder.encode(newTemporaryPassword));
+        officer.setRequiresPasswordChange(true);
         officerRepository.save(officer);
     }
 }

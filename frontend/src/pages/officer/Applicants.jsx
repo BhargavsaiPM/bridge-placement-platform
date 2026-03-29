@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { officerApi } from '../../api/officerApi';
 import { Users, Briefcase, UserCheck, ChevronDown } from 'lucide-react';
 
@@ -13,21 +14,44 @@ const STATUS_CONFIG = {
 
 export default function OfficerApplicants() {
     const [jobs, setJobs] = useState([]);
+    const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const selectedJobId = searchParams.get('jobId');
 
     useEffect(() => {
-        const fetchJobs = async () => {
+        const fetchJobsAndApplications = async () => {
             try {
                 const res = await officerApi.getJobs();
-                setJobs(Array.isArray(res.data) ? res.data : []);
+                const jobsData = Array.isArray(res.data) ? res.data : [];
+                setJobs(jobsData);
+
+                const scopedJobs = selectedJobId
+                    ? jobsData.filter((job) => String(job.id) === selectedJobId)
+                    : jobsData;
+
+                const appResponses = await Promise.all(
+                    scopedJobs.map(async (job) => {
+                        const appRes = await officerApi.getApplicationsForJob(job.id);
+                        const items = Array.isArray(appRes.data?.applications) ? appRes.data.applications : [];
+                        return items.map((app) => ({
+                            ...app,
+                            jobTitle: job.title,
+                            jobId: job.id,
+                        }));
+                    })
+                );
+
+                setApplications(appResponses.flat());
             } catch (err) {
                 console.error('Failed to load jobs:', err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchJobs();
-    }, []);
+
+        fetchJobsAndApplications();
+    }, [selectedJobId]);
 
     if (loading) {
         return (
@@ -37,14 +61,7 @@ export default function OfficerApplicants() {
         );
     }
 
-    // Flatten all applications from all jobs
-    const allApplications = jobs.flatMap(job =>
-        (job.applications || []).map(app => ({
-            ...app,
-            jobTitle: job.title,
-            jobId: job.id,
-        }))
-    );
+    const allApplications = applications;
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -74,16 +91,17 @@ export default function OfficerApplicants() {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {allApplications.map((app, i) => {
-                                const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG['APPLIED'];
+                                const applicationStatus = app.status || app.applicationStatus || 'APPLIED';
+                                const cfg = STATUS_CONFIG[applicationStatus] || STATUS_CONFIG['APPLIED'];
                                 return (
                                     <tr key={app.id || i} className="hover:bg-white/5 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold text-xs">
-                                                    {(app.user?.name || 'U').charAt(0)}
+                                                    {(app.user?.fullName || app.user?.firstName || 'U').charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white">{app.user?.name || 'Unknown'}</p>
+                                                    <p className="font-medium text-white">{app.user?.fullName || [app.user?.firstName, app.user?.lastName].filter(Boolean).join(' ') || 'Unknown'}</p>
                                                     <p className="text-xs text-text-secondary">{app.user?.email || ''}</p>
                                                 </div>
                                             </div>

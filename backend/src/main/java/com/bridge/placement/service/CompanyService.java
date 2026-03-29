@@ -71,15 +71,25 @@ public class CompanyService {
         officer.setPassword(passwordEncoder.encode(request.getPassword()));
         officer.setAge(request.getAge());
         officer.setJobRole(request.getJobRole());
-        officer.setWorkingSince(request.getWorkingSince());
+        officer.setWorkingSince(java.time.LocalDate.now());
         officer.setProfilePhoto(request.getProfilePhoto());
         officer.setDepartment(request.getDepartment());
         officer.setBloodGroup(request.getBloodGroup());
+        officer.setDoorNumber(request.getDoorNumber());
+        officer.setStreetName(request.getStreetName());
+        officer.setLandmark(request.getLandmark());
+        officer.setCity(request.getCity());
+        officer.setDistrict(request.getDistrict());
+        officer.setState(request.getState());
+        officer.setPincode(request.getPincode());
+        officer.setCountry(request.getCountry());
 
         String address = java.util.stream.Stream.of(
                 request.getDoorNumber(),
                 request.getStreetName(),
+                request.getLandmark(),
                 request.getCity(),
+                request.getDistrict(),
                 request.getState(),
                 request.getPincode(),
                 request.getCountry()).filter(s -> s != null && !s.isBlank())
@@ -87,11 +97,12 @@ public class CompanyService {
         officer.setAddress(address);
         officer.setCompany(company);
         officer.setRole(Role.PLACEMENT_OFFICER);
+        officer.setApproved(false);
         officer.setActive(true);
 
         placementOfficerRepository.save(officer);
 
-        return new MessageResponse("Placement Officer Created Successfully");
+        return new MessageResponse("Placement Officer created and sent for admin approval.");
     }
 
     @Transactional
@@ -101,7 +112,11 @@ public class CompanyService {
 
         company.setName(request.getName());
         company.setBranchAddress(request.getBranchAddress());
+        company.setDescription(request.getDescription());
         company.setCompanyType(request.getCompanyType());
+        if (request.getProfilePhoto() != null && !request.getProfilePhoto().isBlank()) {
+            company.setProfilePhoto(request.getProfilePhoto());
+        }
 
         return companyRepository.save(company);
     }
@@ -118,5 +133,19 @@ public class CompanyService {
         officer.setActive(false);
         placementOfficerRepository.save(officer);
         return new MessageResponse("Officer deactivated successfully");
+    }
+
+    @Transactional
+    public MessageResponse activateOfficer(Long companyId, Long officerId) {
+        PlacementOfficer officer = placementOfficerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+
+        if (!officer.getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized: officer does not belong to your company");
+        }
+
+        officer.setActive(true);
+        placementOfficerRepository.save(officer);
+        return new MessageResponse("Officer activated successfully");
     }
 }

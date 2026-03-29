@@ -16,6 +16,12 @@ export const adminApi = {
     rejectUser: (id) => api.post(`/admin/user/${id}/reject`),
     blockUser: (id) => api.post(`/admin/user/${id}/block`),
 
+    // Officer Approvals
+    getPendingOfficers: () => api.get('/admin/officers/pending'),
+    approveOfficer: (id) => api.post(`/admin/officer/${id}/approve`),
+    rejectOfficer: (id) => api.post(`/admin/officer/${id}/reject`),
+    blockOfficer: (id) => api.post(`/admin/officer/${id}/block`),
+
     // Verify Admin Password
     verifyPassword: (password) => api.post('/admin/verify-password', { password }),
 

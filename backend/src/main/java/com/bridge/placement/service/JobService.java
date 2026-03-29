@@ -39,6 +39,8 @@ public class JobService {
         Job job = new Job();
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
+        job.setMinimumQualifications(request.getMinimumQualifications());
+        job.setPreferredQualifications(request.getPreferredQualifications());
         job.setCompany(company);
         job.setRequiredSkills(request.getRequiredSkills());
         job.setPreferredSkills(request.getPreferredSkills());
@@ -50,6 +52,7 @@ public class JobService {
         job.setApplicationDeadline(request.getApplicationDeadline());
         job.setMaxApplicants(request.getMaxApplicants());
         job.setStatus(JobStatus.OPEN); // Default open for now
+        job.setAssignedOfficers(resolveAssignedOfficers(company, request.getAssignedOfficerIds()));
 
         // Rounds
         if (request.getRounds() != null) {
@@ -89,6 +92,8 @@ public class JobService {
         Job job = new Job();
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
+        job.setMinimumQualifications(request.getMinimumQualifications());
+        job.setPreferredQualifications(request.getPreferredQualifications());
         job.setCompany(company);
         job.setRequiredSkills(request.getRequiredSkills());
         job.setPreferredSkills(request.getPreferredSkills());
@@ -100,6 +105,7 @@ public class JobService {
         job.setApplicationDeadline(request.getApplicationDeadline());
         job.setMaxApplicants(request.getMaxApplicants());
         job.setStatus(JobStatus.OPEN); // Default open for now
+        job.setAssignedOfficers(resolveAssignedOfficers(company, request.getAssignedOfficerIds()));
 
         // Rounds
         if (request.getRounds() != null) {
@@ -124,6 +130,7 @@ public class JobService {
         return job;
     }
 
+    @Transactional(readOnly = true)
     public List<Job> searchJobs(String location, String type) {
         return jobRepository.findAll().stream()
                 .filter(job -> location == null || job.getLocation() == null ||
@@ -133,11 +140,13 @@ public class JobService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Job getJob(Long id) {
         return jobRepository.findById(id).orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
     // Company Job Management
+    @Transactional(readOnly = true)
     public List<Job> getJobsByCompany(Long companyId) {
         return jobRepository.findByCompanyId(companyId);
     }
@@ -175,10 +184,11 @@ public class JobService {
     }
 
     // Officer Job Management
+    @Transactional(readOnly = true)
     public List<Job> getJobsByOfficer(Long officerId) {
         PlacementOfficer officer = placementOfficerRepository.findById(officerId)
                 .orElseThrow(() -> new RuntimeException("Officer not found"));
-        return jobRepository.findByCompanyId(officer.getCompany().getId());
+        return jobRepository.findVisibleJobsForOfficer(officer.getCompany().getId(), officerId);
     }
 
     @Transactional
@@ -240,6 +250,8 @@ public class JobService {
     private void updateJobFields(Job job, JobRequest request) {
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
+        job.setMinimumQualifications(request.getMinimumQualifications());
+        job.setPreferredQualifications(request.getPreferredQualifications());
         job.setRequiredSkills(request.getRequiredSkills());
         job.setPreferredSkills(request.getPreferredSkills());
         job.setExperienceRequired(request.getExperienceRequired());
@@ -249,6 +261,7 @@ public class JobService {
         job.setJobType(request.getJobType());
         job.setApplicationDeadline(request.getApplicationDeadline());
         job.setMaxApplicants(request.getMaxApplicants());
+        job.setAssignedOfficers(resolveAssignedOfficers(job.getCompany(), request.getAssignedOfficerIds()));
 
         // Update rounds (B9 fix)
         if (request.getRounds() != null) {
@@ -262,5 +275,29 @@ public class JobService {
                 job.getRounds().add(round);
             }
         }
+    }
+
+    private List<PlacementOfficer> resolveAssignedOfficers(Company company, List<Long> assignedOfficerIds) {
+        if (assignedOfficerIds == null || assignedOfficerIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> uniqueOfficerIds = assignedOfficerIds.stream().distinct().toList();
+        List<PlacementOfficer> officers = placementOfficerRepository.findAllById(uniqueOfficerIds);
+
+        if (officers.size() != uniqueOfficerIds.size()) {
+            throw new RuntimeException("One or more selected placement officers were not found.");
+        }
+
+        boolean invalidOfficer = officers.stream()
+                .anyMatch(officer ->
+                        !officer.getCompany().getId().equals(company.getId())
+                                || !officer.isActive()
+                                || !officer.isApproved());
+        if (invalidOfficer) {
+            throw new RuntimeException("Only active and admin-approved placement officers from your company can be assigned.");
+        }
+
+        return new ArrayList<>(officers);
     }
 }

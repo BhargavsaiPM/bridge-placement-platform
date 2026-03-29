@@ -10,6 +10,8 @@ public class UpdateOfficerProfileRequest {
     private String name;
 
     private Integer age;
+    private LocalDate dateOfBirth;
+    private String mobileNumber;
     private String jobRole;
     private LocalDate workingSince;
     private String department;
@@ -19,6 +21,7 @@ public class UpdateOfficerProfileRequest {
     // Split Address
     private String doorNumber;
     private String streetName;
+    private String district;
     private String city;
     private String state;
     private String pincode;

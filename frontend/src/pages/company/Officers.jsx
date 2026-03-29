@@ -2,48 +2,76 @@ import React, { useEffect, useState } from 'react';
 import { companyApi } from '../../api/companyApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import OfficerTable from '../../components/company/OfficerTable';
-import { Plus, X, Mail, User } from 'lucide-react';
+import { Plus, X, Mail, User, Building2, Lock } from 'lucide-react';
+
+const getOfficerName = ({ surname, middleName, lastName }) =>
+    [surname, middleName, lastName].filter((value) => value?.trim()).join(' ');
 
 export default function Officers() {
     const [officers, setOfficers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [companyName, setCompanyName] = useState('');
 
-    // Form state
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [formData, setFormData] = useState({
+        surname: '',
+        middleName: '',
+        lastName: '',
+        email: '',
+        password: '',
+    });
     const [formError, setFormError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    const inputClass =
+        'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white outline-none transition-colors focus:ring-2 focus:ring-success/50';
 
     const fetchOfficers = async () => {
         try {
             const res = await companyApi.getOfficers();
-            setOfficers(Array.isArray(res.data) ? res.data : []);
+            setOfficers(
+                Array.isArray(res.data)
+                    ? res.data.map((officer) => ({
+                          ...officer,
+                          blocked: officer.active === false,
+                          approvalState: officer.approved === false ? 'PENDING' : officer.active === false ? 'INACTIVE' : 'ACTIVE',
+                      }))
+                    : []
+            );
         } catch (err) {
-            console.error("Failed to load officers", err);
+            console.error('Failed to load officers', err);
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchCompanyProfile = async () => {
+        try {
+            const res = await companyApi.getProfile();
+            setCompanyName(res.data?.name || '');
+        } catch (err) {
+            console.error('Failed to load company profile', err);
+        }
+    };
+
     useEffect(() => {
         fetchOfficers();
+        fetchCompanyProfile();
         const intervalId = setInterval(fetchOfficers, 15000);
         return () => clearInterval(intervalId);
     }, []);
 
     const handleToggleBlock = async (id, currentlyBlocked) => {
         try {
-            // Optimistic Update
-            setOfficers(prev => prev.map(o => o.id === id ? { ...o, blocked: !currentlyBlocked } : o));
+            setOfficers((prev) => prev.map((officer) => (officer.id === id ? { ...officer, blocked: !currentlyBlocked } : officer)));
             if (currentlyBlocked) {
                 await companyApi.unblockOfficer(id);
             } else {
                 await companyApi.blockOfficer(id);
             }
         } catch (err) {
-            // Revert optimism
-            setOfficers(prev => prev.map(o => o.id === id ? { ...o, blocked: currentlyBlocked } : o));
-            alert("Failed to change officer status");
+            setOfficers((prev) => prev.map((officer) => (officer.id === id ? { ...officer, blocked: currentlyBlocked } : officer)));
+            alert('Failed to change officer status');
         }
     };
 
@@ -53,21 +81,27 @@ export default function Officers() {
         setSubmitting(true);
 
         try {
-            // Example rudimentary check - normally domain is fetched from jwt or profile context
-            // Allowing to fail server-side if domain logic is purely backend bound
+            const payload = {
+                name: getOfficerName(formData),
+                email: formData.email,
+                password: formData.password,
+            };
 
-            const res = await companyApi.createOfficer(formData);
-
-            // Assume success object returned
-            setOfficers(prev => [...prev, res.data.officer || res.data]);
+            await companyApi.createOfficer(payload);
+            await fetchOfficers();
             setIsModalOpen(false);
-            setFormData({ name: '', email: '', password: '' });
+            setFormData({ surname: '', middleName: '', lastName: '', email: '', password: '' });
         } catch (err) {
             console.error(err);
-            setFormError(err.response?.data?.message || err.response?.data || "Failed to create officer. Verify email domain matches.");
+            setFormError(err.response?.data?.message || err.response?.data || 'Failed to create officer. Verify email domain matches.');
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleResetPassword = async (officerId, newPassword) => {
+        await companyApi.resetOfficerPassword(officerId, { newPassword });
+        await fetchOfficers();
     };
 
     return (
@@ -82,7 +116,7 @@ export default function Officers() {
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
                         Placement Officers
                     </h1>
-                    <p className="text-text-secondary mt-1 text-sm">Manage access for your company's recruitment delegates.</p>
+                    <p className="text-text-secondary mt-1 text-sm">Manage access for your company&apos;s recruitment delegates and track admin approval status.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
@@ -97,10 +131,9 @@ export default function Officers() {
                     <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin"></div>
                 </div>
             ) : (
-                <OfficerTable officers={officers} onToggleBlock={handleToggleBlock} />
+                <OfficerTable officers={officers} onToggleBlock={handleToggleBlock} onResetPassword={handleResetPassword} />
             )}
 
-            {/* Add Officer Modal */}
             <AnimatePresence>
                 {isModalOpen && (
                     <motion.div
@@ -113,7 +146,7 @@ export default function Officers() {
                             initial={{ scale: 0.95, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.95, y: 20 }}
-                            className="glass-panel w-full max-w-md p-6 relative"
+                            className="glass-panel w-full max-w-xl p-6 relative"
                         >
                             <button
                                 onClick={() => setIsModalOpen(false)}
@@ -126,48 +159,87 @@ export default function Officers() {
 
                             <form onSubmit={handleCreateOfficer} className="space-y-4">
                                 {formError && (
-                                    <div className="p-3 bg-danger/10 border border-danger/30 text-danger text-sm rounded-lg">
+                                    <div className="p-3 rounded-lg border border-danger/30 bg-danger/10 text-sm text-danger">
                                         {typeof formError === 'string' ? formError : JSON.stringify(formError)}
                                     </div>
                                 )}
 
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Full Name</label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-3 w-5 h-5 text-text-secondary" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-text-secondary">Surname</label>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-3 w-5 h-5 text-text-secondary" />
+                                            <input
+                                                required
+                                                type="text"
+                                                className={`${inputClass} pl-10`}
+                                                value={formData.surname}
+                                                onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-text-secondary">Last Name</label>
                                         <input
                                             required
                                             type="text"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-success/50"
-                                            value={formData.name}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            className={inputClass}
+                                            value={formData.lastName}
+                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Company Email</label>
+                                    <label className="mb-1 block text-sm font-medium text-text-secondary">Middle Name (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className={inputClass}
+                                        value={formData.middleName}
+                                        onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-text-secondary">Company</label>
+                                    <div className="relative">
+                                        <Building2 className="absolute left-3 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            className={`${inputClass} pl-10 cursor-not-allowed opacity-75`}
+                                            value={companyName}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-text-secondary">Company Email</label>
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-3 w-5 h-5 text-text-secondary" />
                                         <input
                                             required
                                             type="email"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-success/50"
+                                            className={`${inputClass} pl-10`}
                                             value={formData.email}
-                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Temporary Password</label>
-                                    <input
-                                        required
-                                        type="password"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-success/50"
-                                        value={formData.password}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                    />
+                                    <label className="mb-1 block text-sm font-medium text-text-secondary">Temporary Password</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            required
+                                            type="password"
+                                            className={`${inputClass} pl-10`}
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="pt-4 flex gap-3">

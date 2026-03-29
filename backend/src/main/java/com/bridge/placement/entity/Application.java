@@ -46,4 +46,20 @@ public class Application extends BaseEntity {
     // AI generated
     @Column(columnDefinition = "TEXT")
     private String improvementSuggestions;
+
+    public ApplicationStatus getStatus() {
+        return applicationStatus;
+    }
+
+    public String getStudentName() {
+        return user != null ? user.getFullName() : null;
+    }
+
+    public String getStudentEmail() {
+        return user != null ? user.getEmail() : null;
+    }
+
+    public String getStudentMobile() {
+        return user != null ? user.getMobile() : null;
+    }
 }

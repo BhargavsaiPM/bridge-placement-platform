@@ -39,6 +39,10 @@ public class ResumeParserService {
      * Fallback for WORKING professionals without workingSince: age > 22 -> (age - 22) years.
      */
     public int extractExperienceYears(User user) {
+        if (user.getExperienceYears() != null && user.getExperienceYears() >= 0) {
+            return user.getExperienceYears();
+        }
+
         if (user.getRoleType() == UserType.STUDENT) {
             // STUDENTS generally have 0 years full-time experience natively for ATS scoring purposes
             return 0;
@@ -82,6 +86,26 @@ public class ResumeParserService {
      * Returns a score 0–10 for AILS education component.
      */
     public double scoreEducation(User user) {
+        if (user.getHighestQualification() != null && !user.getHighestQualification().isBlank()) {
+            String qualification = user.getHighestQualification().toLowerCase();
+            if (qualification.contains("phd") || qualification.contains("doctor")) {
+                return 10.0;
+            }
+            if (qualification.contains("m.tech") || qualification.contains("mtech")
+                    || qualification.contains("mca") || qualification.contains("mba")
+                    || qualification.contains("master")) {
+                return 9.0;
+            }
+            if (qualification.contains("b.tech") || qualification.contains("btech")
+                    || qualification.contains("b.e") || qualification.contains("be")
+                    || qualification.contains("bachelor") || qualification.contains("degree")) {
+                return 8.0;
+            }
+            if (qualification.contains("diploma")) {
+                return 6.0;
+            }
+        }
+
         if (user.getRoleType() == null)
             return 5.0;
         return switch (user.getRoleType()) {

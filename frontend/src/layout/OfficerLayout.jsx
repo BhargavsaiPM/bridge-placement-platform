@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import OfficerSidebar from './OfficerSidebar';
+import OfficerTopNav from './OfficerTopNav';
 
 export default function OfficerLayout() {
     const token = localStorage.getItem('token');
@@ -23,10 +24,13 @@ export default function OfficerLayout() {
             </div>
 
             <OfficerSidebar />
+            <OfficerTopNav />
 
-            <div className="pl-64 pr-4 py-4 min-h-screen z-10 relative">
+            <div className="pl-64 pr-8 pt-24 pb-8 min-h-screen z-10 relative">
                 <main className="h-full">
-                    <Outlet />
+                    <div className="max-w-7xl mx-auto w-full">
+                        <Outlet />
+                    </div>
                 </main>
             </div>
         </div>

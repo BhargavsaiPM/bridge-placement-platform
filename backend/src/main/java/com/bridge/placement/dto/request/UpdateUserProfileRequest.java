@@ -16,9 +16,21 @@ public class UpdateUserProfileRequest {
 
     private String mobile;
     private LocalDate dob;
+    private String country;
+    private String state;
+    private String district;
+    private String pincode;
+    private String city;
+    private String street;
+    private String doorNumber;
     private String githubLink;
     private String resumeFileName;
     private String skills;
     private String achievements;
     private String profilePhoto;
+    private String highestQualification;
+    private Double cgpa;
+    private String specialization;
+    private Integer passingYear;
+    private Integer experienceYears;
 }

@@ -32,7 +32,8 @@ export default function Register() {
         // Student
         collegeRollNumber: '', collegeMailId: '', collegeName: '',
         // Professional
-        employeeId: '', companyMailId: '', companyName: '', currentPosition: ''
+        employeeId: '', companyMailId: '', companyName: '', currentPosition: '',
+        highestQualification: '', cgpa: '', passingYear: '', experienceYears: ''
     });
 
     const [collegeAddress, setCollegeAddress] = useState({
@@ -137,12 +138,12 @@ export default function Register() {
             }
         } else if (step === 2) {
             if (userData.roleType === 'STUDENT') {
-                if (!userData.collegeRollNumber || !userData.collegeMailId || !userData.collegeName) {
+                if (!userData.collegeRollNumber || !userData.collegeMailId || !userData.collegeName || !userData.highestQualification || !userData.cgpa || !userData.passingYear) {
                     setError('Please fill all required college fields.');
                     return;
                 }
             } else {
-                if (!userData.employeeId || !userData.companyMailId || !userData.companyName || !userData.currentPosition) {
+                if (!userData.employeeId || !userData.companyMailId || !userData.companyName || !userData.currentPosition || !userData.highestQualification || !userData.cgpa || !userData.passingYear) {
                     setError('Please fill all required professional fields.');
                     return;
                 }
@@ -179,6 +180,9 @@ export default function Register() {
             // 3. Prepare Payload
             const payload = {
                 ...userData,
+                cgpa: userData.cgpa === '' ? null : Number(userData.cgpa),
+                passingYear: userData.passingYear ? Number(userData.passingYear) : null,
+                experienceYears: userData.experienceYears === '' ? null : Number(userData.experienceYears),
                 country: userAddress.country,
                 state: userAddress.state,
                 district: userAddress.district,
@@ -238,7 +242,8 @@ export default function Register() {
             const payload = {
                 ...companyData,
                 ...companyAddress,
-                proofDocumentUrl: proofUrl
+                proofDocumentUrl: proofUrl,
+                industrySector: companyData.industrySector || null
             };
             delete payload.confirmPassword;
 
@@ -510,6 +515,54 @@ export default function Register() {
                                                 College Name *
                                             </label>
                                         </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="relative group">
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="text" id="highestQualificationStudent" required
+                                                    placeholder="Highest Education"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.highestQualification} onChange={e => setUserData({ ...userData, highestQualification: e.target.value })} />
+                                                <label htmlFor="highestQualificationStudent" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.highestQualification ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Highest Education *
+                                                </label>
+                                            </div>
+                                            <div className="relative group">
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="cgpaStudent" required min="0" max="10" step="0.01"
+                                                    placeholder="CGPA"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.cgpa} onChange={e => setUserData({ ...userData, cgpa: e.target.value })} />
+                                                <label htmlFor="cgpaStudent" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.cgpa ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    CGPA *
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="relative group">
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="passingYearStudent" required
+                                                    placeholder="Passing Year"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.passingYear} onChange={e => setUserData({ ...userData, passingYear: e.target.value, experienceYears: 0 })} />
+                                                <label htmlFor="passingYearStudent" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.passingYear ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Passing Year *
+                                                </label>
+                                            </div>
+                                            <div className="relative group">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="experienceYearsStudent"
+                                                    placeholder="Experience Years"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.experienceYears} onChange={e => setUserData({ ...userData, experienceYears: e.target.value })} />
+                                                <label htmlFor="experienceYearsStudent" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.experienceYears !== '' ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Internship Experience
+                                                </label>
+                                            </div>
+                                        </div>
 
                                         <AddressFields value={collegeAddress} onChange={setCollegeAddress} title="College Address" hideDoorNumber={true} />
                                     </div>
@@ -564,6 +617,54 @@ export default function Register() {
                                                     value={userData.currentPosition} onChange={e => setUserData({ ...userData, currentPosition: e.target.value })} />
                                                 <label htmlFor="currentPosition" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.currentPosition ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
                                                     Current Position *
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="relative group">
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="text" id="highestQualificationWorking" required
+                                                    placeholder="Highest Education"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.highestQualification} onChange={e => setUserData({ ...userData, highestQualification: e.target.value })} />
+                                                <label htmlFor="highestQualificationWorking" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.highestQualification ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Highest Education *
+                                                </label>
+                                            </div>
+                                            <div className="relative group">
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="cgpaWorking" required min="0" max="10" step="0.01"
+                                                    placeholder="CGPA"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.cgpa} onChange={e => setUserData({ ...userData, cgpa: e.target.value })} />
+                                                <label htmlFor="cgpaWorking" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.cgpa ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    CGPA *
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="relative group">
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="passingYearWorking" required
+                                                    placeholder="Passing Year"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.passingYear} onChange={e => setUserData({ ...userData, passingYear: e.target.value })} />
+                                                <label htmlFor="passingYearWorking" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.passingYear ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Passing Year *
+                                                </label>
+                                            </div>
+                                            <div className="relative group">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none z-10" />
+                                                <input
+                                                    type="number" id="experienceYearsWorking"
+                                                    placeholder="Experience Years"
+                                                    className="peer w-full pl-12 pr-4 pt-6 pb-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium text-base"
+                                                    value={userData.experienceYears} onChange={e => setUserData({ ...userData, experienceYears: e.target.value })} />
+                                                <label htmlFor="experienceYearsWorking" className={`absolute left-12 transform text-text-muted transition-all duration-300 pointer-events-none ${userData.experienceYears !== '' ? 'text-xs top-2 text-text-secondary' : 'text-sm top-1/2 -translate-y-1/2 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-text-secondary'}`}>
+                                                    Experience Years
                                                 </label>
                                             </div>
                                         </div>
@@ -712,13 +813,21 @@ export default function Register() {
                                     <option value="SERVICE_BASED" className="bg-background">Service Based</option>
                                     <option value="PRODUCT_BASED" className="bg-background">Product Based</option>
                                 </select>
-                                <div className="relative group">
-                                    <input type="text" id="industrySector" placeholder="Industry Sector (e.g. IT, Finance)" className={inputClassNoIcon}
-                                        value={companyData.industrySector} onChange={e => setCompanyData({ ...companyData, industrySector: e.target.value })} />
-                                    <label htmlFor="industrySector" className={`absolute left-4 transform transition-all duration-300 pointer-events-none ${companyData.industrySector ? 'text-xs top-2 text-white/80' : 'text-sm top-1/2 -translate-y-1/2 text-white/50 peer-focus:text-xs peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-white/80'}`}>
-                                        Industry Sector
-                                    </label>
-                                </div>
+                                <select className={inputClassNoIcon + ' pb-2 pt-6'} style={{paddingTop: '1.5rem', paddingBottom: '0.5rem'}} value={companyData.industrySector} onChange={e => setCompanyData({ ...companyData, industrySector: e.target.value })}>
+                                    <option value="" className="bg-background">Industry Sector (Optional)</option>
+                                    <option value="SOFTWARE" className="bg-background">Software</option>
+                                    <option value="HARDWARE" className="bg-background">Hardware</option>
+                                    <option value="ELECTRONICS" className="bg-background">Electronics</option>
+                                    <option value="CORE_ENGINEERING" className="bg-background">Core Engineering</option>
+                                    <option value="IT_SERVICES" className="bg-background">IT Services</option>
+                                    <option value="FINANCE" className="bg-background">Finance</option>
+                                    <option value="HEALTHCARE" className="bg-background">Healthcare</option>
+                                    <option value="EDUCATION" className="bg-background">Education</option>
+                                    <option value="MANUFACTURING" className="bg-background">Manufacturing</option>
+                                    <option value="RETAIL" className="bg-background">Retail</option>
+                                    <option value="LOGISTICS" className="bg-background">Logistics</option>
+                                    <option value="OTHER" className="bg-background">Other</option>
+                                </select>
                             </div>
 
                             <div className="pt-2">

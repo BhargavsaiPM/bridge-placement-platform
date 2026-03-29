@@ -15,8 +15,17 @@ export default function ApplicantKanban({ applications, onUpdateStatus }) {
     const [salaryDialogApp, setSalaryDialogApp] = useState(null);
     const [salaryInput, setSalaryInput] = useState('');
 
+    const getStatus = (app) => (app.status || app.applicationStatus || 'APPLIED').toUpperCase();
+    const getApplicantName = (app) =>
+        app.studentName
+        || app.user?.fullName
+        || [app.user?.firstName, app.user?.lastName].filter(Boolean).join(' ')
+        || 'Applicant';
+    const getApplicantEmail = (app) => app.studentEmail || app.user?.email || '';
+    const getApplicantMobile = (app) => app.studentMobile || app.user?.mobile || '';
+
     const getAppsByStatus = (status) => {
-        return applications.filter(app => (app.status || 'APPLIED').toUpperCase() === status);
+        return applications.filter(app => getStatus(app) === status);
     };
 
     const handleDragStart = (app) => {
@@ -31,9 +40,9 @@ export default function ApplicantKanban({ applications, onUpdateStatus }) {
         if (!draggedApp) return;
 
         // If dropping into SELECTED, open salary dialog instead of immediate update
-        if (statusId === 'SELECTED' && draggedApp.status !== 'SELECTED') {
+        if (statusId === 'SELECTED' && getStatus(draggedApp) !== 'SELECTED') {
             setSalaryDialogApp({ ...draggedApp, targetStatus: statusId });
-        } else if (draggedApp.status !== statusId) {
+        } else if (getStatus(draggedApp) !== statusId) {
             onUpdateStatus(draggedApp.id, { status: statusId });
         }
 
@@ -83,18 +92,18 @@ export default function ApplicantKanban({ applications, onUpdateStatus }) {
                                         className="p-4 rounded-xl bg-surface border border-white/10 shadow-lg cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
                                     >
                                         <div className="font-bold text-text-primary mb-1">
-                                            {app.studentName}
+                                            {getApplicantName(app)}
                                         </div>
 
                                         <div className="space-y-1 text-xs text-text-secondary">
                                             <div className="flex items-center gap-2">
                                                 <Mail className="w-3 h-3" />
-                                                <span className="truncate">{app.studentEmail}</span>
+                                                <span className="truncate">{getApplicantEmail(app)}</span>
                                             </div>
-                                            {app.studentMobile && (
+                                            {getApplicantMobile(app) && (
                                                 <div className="flex items-center gap-2">
                                                     <Phone className="w-3 h-3" />
-                                                    <span>{app.studentMobile}</span>
+                                                    <span>{getApplicantMobile(app)}</span>
                                                 </div>
                                             )}
 
@@ -125,7 +134,7 @@ export default function ApplicantKanban({ applications, onUpdateStatus }) {
                         <div className="glass-panel w-full max-w-sm p-6 relative">
                             <h2 className="text-xl font-bold mb-4">Offer Details</h2>
                             <p className="text-sm text-text-secondary mb-4">
-                                Enter the salary package offered to <span className="text-white font-medium">{salaryDialogApp.studentName}</span>.
+                                Enter the salary package offered to <span className="text-white font-medium">{getApplicantName(salaryDialogApp)}</span>.
                             </p>
 
                             <form onSubmit={handleSalarySubmit}>

@@ -5,31 +5,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PasswordModal from '../../components/modals/PasswordModal';
 
 export default function Approvals() {
-    const [activeTab, setActiveTab] = useState('students'); // 'students', 'professionals', 'companies'
+    const [activeTab, setActiveTab] = useState('students');
 
     // Data states
     const [companies, setCompanies] = useState([]);
     const [students, setStudents] = useState([]);
     const [professionals, setProfessionals] = useState([]);
+    const [officers, setOfficers] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [actionReq, setActionReq] = useState(null); // { id, type: 'user'|'company', action: 'approve' | 'reject' | 'block' }
+    const [actionReq, setActionReq] = useState(null);
 
     const fetchAllPending = async () => {
         setLoading(true);
         setError(null);
         try {
-            const [compRes, studRes, profRes] = await Promise.all([
+            const [compRes, studRes, profRes, officerRes] = await Promise.all([
                 adminApi.getPendingCompanies(),
                 adminApi.getPendingUsers('STUDENT'),
-                adminApi.getPendingUsers('WORKING')
+                adminApi.getPendingUsers('WORKING'),
+                adminApi.getPendingOfficers(),
             ]);
             setCompanies(compRes.data || []);
             setStudents(studRes.data || []);
             setProfessionals(profRes.data || []);
+            setOfficers(officerRes.data || []);
         } catch (err) {
             console.error("Failed to load pending approvals", err);
             setError("Could not load pending approvals.");
@@ -57,6 +60,11 @@ export default function Approvals() {
                 if (action === 'reject') await adminApi.rejectCompany(id);
                 if (action === 'block') await adminApi.blockCompany(id);
                 setCompanies(prev => prev.filter(c => c.id !== id));
+            } else if (type === 'officer') {
+                if (action === 'approve') await adminApi.approveOfficer(id);
+                if (action === 'reject') await adminApi.rejectOfficer(id);
+                if (action === 'block') await adminApi.blockOfficer(id);
+                setOfficers(prev => prev.filter(officer => officer.id !== id));
             } else {
                 if (action === 'approve') await adminApi.approveUser(id);
                 if (action === 'reject') await adminApi.rejectUser(id);
@@ -108,7 +116,7 @@ export default function Approvals() {
         </div>
     );
 
-    if (loading && companies.length === 0 && students.length === 0 && professionals.length === 0) {
+    if (loading && companies.length === 0 && students.length === 0 && professionals.length === 0 && officers.length === 0) {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
@@ -116,7 +124,14 @@ export default function Approvals() {
         );
     }
 
-    const currentDataList = activeTab === 'students' ? students : activeTab === 'professionals' ? professionals : companies;
+    const currentDataList =
+        activeTab === 'students'
+            ? students
+            : activeTab === 'professionals'
+                ? professionals
+                : activeTab === 'officers'
+                    ? officers
+                    : companies;
 
     return (
         <motion.div
@@ -129,7 +144,7 @@ export default function Approvals() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent">
                     Registration Approvals
                 </h1>
-                <p className="text-text-secondary mt-1 text-sm">Review and manage pending user and company registrations.</p>
+                <p className="text-text-secondary mt-1 text-sm">Review and manage pending student, professional, officer, and company registrations.</p>
             </div>
 
             {/* Tabs */}
@@ -173,6 +188,19 @@ export default function Approvals() {
                     </div>
                     {activeTab === 'companies' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"></div>}
                 </button>
+                <button
+                    className={`pb-4 px-2 text-sm font-medium transition-colors relative ${activeTab === 'officers' ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
+                    onClick={() => setActiveTab('officers')}
+                >
+                    <div className="flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4" />
+                        Officer Requests
+                        {officers.length > 0 && (
+                            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">{officers.length}</span>
+                        )}
+                    </div>
+                    {activeTab === 'officers' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"></div>}
+                </button>
             </div>
 
             {error && (
@@ -208,7 +236,7 @@ export default function Approvals() {
                                         {activeTab === 'companies' ? (
                                             <Building2 className="w-6 h-6 text-primary" />
                                         ) : (
-                                            item.profilePhoto ? <img src={getDocumentUrl(item.profilePhoto)} alt={item.firstName} className="w-full h-full object-cover" /> : <User className="w-6 h-6 text-primary" />
+                                            item.profilePhoto ? <img src={getDocumentUrl(item.profilePhoto)} alt={item.firstName || item.name} className="w-full h-full object-cover" /> : <User className="w-6 h-6 text-primary" />
                                         )}
                                     </div>
                                     <div>
@@ -224,15 +252,15 @@ export default function Approvals() {
                                 <div className="flex items-center gap-2">
                                     <Mail className="w-4 h-4" /> <span>{item.email || item.domainEmail || 'N/A'}</span>
                                 </div>
-                                {(item.phone || item.mobile) && (
+                                {(item.phone || item.mobile || item.mobileNumber) && (
                                     <div className="flex items-center gap-2">
-                                        <Phone className="w-4 h-4" /> <span>{item.phone || item.mobile}</span>
+                                        <Phone className="w-4 h-4" /> <span>{item.phone || item.mobile || item.mobileNumber}</span>
                                     </div>
                                 )}
                                 <div className="flex items-center gap-2">
                                     <MapPin className="w-4 h-4" />
                                     <span className="truncate">
-                                        {[item.city, item.district, item.state, item.country, item.pincode].filter(Boolean).join(', ') || 'Address not provided'}
+                                        {[item.city, item.district, item.state, item.country, item.pincode].filter(Boolean).join(', ') || item.address || 'Address not provided'}
                                     </span>
                                 </div>
 
@@ -269,6 +297,15 @@ export default function Approvals() {
                                     </div>
                                 )}
 
+                                {activeTab === 'officers' && (
+                                    <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+                                        <p><strong className="text-white">Company:</strong> {item.company?.name || 'N/A'}</p>
+                                        <p><strong className="text-white">Department:</strong> {item.department || 'N/A'}</p>
+                                        <p><strong className="text-white">Role:</strong> {item.jobRole || 'Placement Officer'}</p>
+                                        <p><strong className="text-white">Working Since:</strong> {item.workingSince ? new Date(item.workingSince).toLocaleDateString('en-IN') : 'N/A'}</p>
+                                    </div>
+                                )}
+
                                 {/* Documents Previews */}
                                 <div className="mt-4 pt-4 border-t border-white/10">
                                     <strong className="text-white block mb-2">Attached Documents:</strong>
@@ -297,7 +334,7 @@ export default function Approvals() {
                                 </div>
                             </div>
 
-                            {renderActionButtons(item.id, activeTab === 'companies' ? 'company' : 'user')}
+                            {renderActionButtons(item.id, activeTab === 'companies' ? 'company' : activeTab === 'officers' ? 'officer' : 'user')}
                         </motion.div>
                     ))}
                 </AnimatePresence>
