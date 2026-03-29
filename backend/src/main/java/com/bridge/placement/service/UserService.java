@@ -27,7 +27,19 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setMobile(request.getMobile());
         user.setDob(request.getDob());
+        user.setCountry(request.getCountry());
+        user.setState(request.getState());
+        user.setDistrict(request.getDistrict());
+        user.setPincode(request.getPincode());
+        user.setCity(request.getCity());
+        user.setStreet(request.getStreet());
+        user.setDoorNumber(request.getDoorNumber());
         user.setGithubLink(request.getGithubLink());
+        user.setHighestQualification(request.getHighestQualification());
+        user.setCgpa(request.getCgpa());
+        user.setSpecialization(request.getSpecialization());
+        user.setPassingYear(request.getPassingYear());
+        user.setExperienceYears(request.getExperienceYears());
 
         // Only update if new one is provided.
         if (request.getResumeFileName() != null && !request.getResumeFileName().isBlank()) {

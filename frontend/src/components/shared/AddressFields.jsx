@@ -3,7 +3,7 @@ import SearchableDropdown from './SearchableDropdown';
 import { Loader2 } from 'lucide-react';
 import api from '../../api/axios'; // Or use native fetch
 
-export default function AddressFields({ value, onChange }) {
+export default function AddressFields({ value, onChange, title = 'Address Details', hideDoorNumber = false }) {
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
@@ -118,11 +118,11 @@ export default function AddressFields({ value, onChange }) {
         }
     };
 
-    const inputClass = "w-full pl-4 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm";
+    const inputClass = "w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-medium text-sm";
 
     return (
         <div className="space-y-4">
-            <h3 className="font-semibold text-white border-b border-white/10 pb-2">Address Details</h3>
+            <h3 className="font-semibold text-white border-b border-white/10 pb-2">{title}</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {/* Country */}
@@ -154,19 +154,7 @@ export default function AddressFields({ value, onChange }) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* District */}
-                <div>
-                    <label className="block text-xs font-medium text-text-secondary mb-1">District</label>
-                    <input
-                        type="text"
-                        value={value.district || ''}
-                        onChange={(e) => onChange({ ...value, district: e.target.value })}
-                        className={inputClass}
-                        placeholder="e.g. Hyderabad"
-                    />
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {/* City */}
                 <div>
                     <label className="block text-xs font-medium text-text-secondary mb-1">
@@ -189,6 +177,18 @@ export default function AddressFields({ value, onChange }) {
                             required
                         />
                     )}
+                </div>
+
+                {/* District */}
+                <div>
+                    <label className="block text-xs font-medium text-text-secondary mb-1">District</label>
+                    <input
+                        type="text"
+                        value={value.district || ''}
+                        onChange={(e) => onChange({ ...value, district: e.target.value })}
+                        className={inputClass}
+                        placeholder="e.g. Hyderabad"
+                    />
                 </div>
             </div>
 
@@ -224,19 +224,21 @@ export default function AddressFields({ value, onChange }) {
             </div>
 
             {/* Door Number */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-xs font-medium text-text-secondary mb-1">Door / Flat No. *</label>
-                    <input
-                        type="text"
-                        value={value.doorNumber || ''}
-                        onChange={(e) => onChange({ ...value, doorNumber: e.target.value })}
-                        className={inputClass}
-                        placeholder="e.g. 101, A-Block"
-                        required
-                    />
+            {!hideDoorNumber && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Door / Flat No. *</label>
+                        <input
+                            type="text"
+                            value={value.doorNumber || ''}
+                            onChange={(e) => onChange({ ...value, doorNumber: e.target.value })}
+                            className={inputClass}
+                            placeholder="e.g. 101, A-Block"
+                            required
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

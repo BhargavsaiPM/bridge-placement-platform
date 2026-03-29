@@ -31,8 +31,10 @@ public class PlacementOfficerRequest {
 
     private String doorNumber;
     private String streetName;
+    private String district;
     private String city;
     private String state;
     private String pincode;
     private String country;
+    private String landmark;
 }

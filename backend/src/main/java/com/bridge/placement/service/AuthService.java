@@ -8,11 +8,13 @@ import com.bridge.placement.dto.response.MessageResponse;
 import com.bridge.placement.entity.Company;
 import com.bridge.placement.entity.LoginLog;
 import com.bridge.placement.entity.OtpToken;
+import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.entity.User;
 import com.bridge.placement.enums.Role;
 import com.bridge.placement.repository.CompanyRepository;
 import com.bridge.placement.repository.LoginLogRepository;
 import com.bridge.placement.repository.OtpTokenRepository;
+import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.repository.UserRepository;
 import com.bridge.placement.security.jwt.JwtUtils;
 import com.bridge.placement.security.services.BridgeUserDetails;
@@ -48,6 +50,7 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final OtpTokenRepository otpTokenRepository;  // B1/B2 fix
     private final LoginLogRepository loginLogRepository;   // N5 fix
+    private final PlacementOfficerRepository placementOfficerRepository;
 
     // B38: Simple in-memory rate limiting
     private final Map<String, Integer> loginAttempts = new ConcurrentHashMap<>();
@@ -66,6 +69,28 @@ public class AuthService {
                 loginAttempts.remove(email);
             }
         }
+
+        // B40: Specific Block checks per explicit user request
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.isBlocked()) {
+                throw new RuntimeException("Your account has been blocked by admin");
+            }
+        });
+
+        companyRepository.findByDomainEmail(email).ifPresent(company -> {
+            if (company.isBlocked()) {
+                throw new RuntimeException("Your account has been blocked by admin");
+            }
+        });
+
+        placementOfficerRepository.findByEmail(email).ifPresent(officer -> {
+            if (!officer.isActive()) {
+                throw new RuntimeException("Your officer account has been deactivated.");
+            }
+            if (!officer.isApproved()) {
+                throw new RuntimeException("Your officer account is awaiting admin approval.");
+            }
+        });
 
         Authentication authentication;
         try {
@@ -161,6 +186,11 @@ public class AuthService {
         user.setSkills(req.getSkills());
         user.setAchievements(req.getAchievements());
         user.setProfilePhoto(req.getProfilePhoto());
+        user.setHighestQualification(req.getHighestQualification());
+        user.setCgpa(req.getCgpa());
+        user.setSpecialization(req.getSpecialization());
+        user.setPassingYear(req.getPassingYear());
+        user.setExperienceYears(req.getExperienceYears());
 
         // Approval - requires admin approval
         user.setApproved(false);

@@ -6,13 +6,11 @@ import com.bridge.placement.entity.Application;
 import com.bridge.placement.entity.Job;
 import com.bridge.placement.entity.User;
 import com.bridge.placement.enums.ApplicationStatus;
+import com.bridge.placement.enums.JobStatus;
 import com.bridge.placement.enums.NotificationType;
 import com.bridge.placement.repository.ApplicationRepository;
 import com.bridge.placement.repository.JobRepository;
 import com.bridge.placement.repository.UserRepository;
-import com.bridge.placement.service.ails.AilsResult;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +27,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
-    private final AilsService ailsService;
     private final NotificationService notificationService;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public MessageResponse applyForJob(Long userId, Long jobId) {
@@ -41,40 +37,56 @@ public class ApplicationService {
 
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
-        // === Real AILS Calculation ===
-        AilsResult ails = ailsService.calculateScore(user, job);
-
-        // Serialize lists to JSON for storage
-        String explanationJson = buildExplanationJson(ails);
+        validateEligibility(user, job);
 
         Application application = new Application();
         application.setJob(job);
         application.setUser(user);
         application.setAppliedAt(LocalDateTime.now());
         application.setApplicationStatus(ApplicationStatus.APPLIED);
-        application.setAilsScore(ails.getScore());
-        application.setExplanation(explanationJson);
-        application.setImprovementSuggestions(String.join(" | ", ails.getImprovementSuggestions()));
-        application.setExceptionFlag(ails.isExceptionFlag());
 
         applicationRepository.save(application);
 
-        // Notify User
         notificationService.createNotification(
                 user.getEmail(),
                 "Application Submitted",
-                "You applied for " + job.getTitle() + " | AILS Score: " + ails.getScore() + "/100 ("
-                        + ails.getMatchLevel() + ")",
+                "You applied for " + job.getTitle() + ". Your application is now pending review.",
                 NotificationType.STATUS_CHANGE);
 
-        return new MessageResponse(String.format(
-                "Applied successfully! Your AILS Score: %.1f/100 — Match Level: %s",
-                ails.getScore(), ails.getMatchLevel()));
+        return new MessageResponse("Applied successfully! Your application is now pending review.");
     }
 
     public Page<Application> getApplicationsForJob(Long jobId, Pageable pageable) {
         return applicationRepository.findByJobId(jobId, pageable);
+    }
+
+    public List<Application> getApplicationsForCompanyJob(Long companyId, Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (!job.getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized access to this job.");
+        }
+
+        return applicationRepository.findByJobIdOrderByAppliedAtDesc(jobId);
+    }
+
+    public List<java.util.Map<String, Object>> getSelectedStudentsForCompany(Long companyId) {
+        return applicationRepository
+                .findByJobCompanyIdAndApplicationStatusOrderByAppliedAtDesc(companyId, ApplicationStatus.SELECTED)
+                .stream()
+                .map(application -> {
+                    java.util.Map<String, Object> entry = new java.util.LinkedHashMap<>();
+                    entry.put("id", application.getId());
+                    entry.put("name", application.getStudentName());
+                    entry.put("email", application.getStudentEmail());
+                    entry.put("mobile", application.getStudentMobile());
+                    entry.put("role", application.getJob() != null ? application.getJob().getTitle() : null);
+                    entry.put("salaryRange", application.getJob() != null ? application.getJob().getSalaryRange() : null);
+                    entry.put("joiningDate", null);
+                    return entry;
+                })
+                .toList();
     }
 
     /**
@@ -126,27 +138,36 @@ public class ApplicationService {
         return new MessageResponse("Status Updated to " + status);
     }
 
-    private String buildExplanationJson(AilsResult ails) {
-        try {
-            var map = new java.util.LinkedHashMap<String, Object>();
-            map.put("score", ails.getScore());
-            map.put("matchLevel", ails.getMatchLevel());
-            map.put("summary", ails.getExplanation());
-            map.put("missingSkills", ails.getMissingSkills());
-            map.put("strongAreas", ails.getStrongAreas());
-            map.put("breakdown", new java.util.LinkedHashMap<String, Object>() {
-                {
-                    put("skillMatch", ails.getSkillMatchScore());
-                    put("keywordSim", ails.getKeywordScore());
-                    put("experience", ails.getExperienceScore());
-                    put("education", ails.getEducationScore());
-                    put("projectRel", ails.getProjectScore());
-                    put("certBonus", ails.getCertificationBonus());
-                }
-            });
-            return objectMapper.writeValueAsString(map);
-        } catch (Exception e) {
-            return ails.getExplanation(); // fallback to plain text
+    @Transactional
+    public MessageResponse updateApplicationStatusForCompany(Long companyId, Long applicationId, ApplicationStatus status) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        if (!application.getJob().getCompany().getId().equals(companyId)) {
+            throw new RuntimeException("Unauthorized access to this application.");
+        }
+
+        return updateApplicationStatus(applicationId, status);
+    }
+
+    private void validateEligibility(User user, Job job) {
+        if (!user.isApproved()) {
+            throw new RuntimeException("Your profile is not approved by admin yet.");
+        }
+        if (user.isBlocked()) {
+            throw new RuntimeException("Your profile is blocked.");
+        }
+        if (job.isBlockedByAdmin() || job.getStatus() != JobStatus.OPEN) {
+            throw new RuntimeException("This job is not accepting applications right now.");
+        }
+        if (job.getApplicationDeadline() != null && job.getApplicationDeadline().isBefore(java.time.LocalDate.now())) {
+            throw new RuntimeException("Application deadline has already passed.");
+        }
+        if (job.getMaxApplicants() != null && applicationRepository.countByJobId(job.getId()) >= job.getMaxApplicants()) {
+            throw new RuntimeException("This job has already reached the maximum number of applicants.");
+        }
+        if (user.getResumeUrl() == null || user.getResumeUrl().isBlank()) {
+            throw new RuntimeException("Resume is missing in your profile.");
         }
     }
 

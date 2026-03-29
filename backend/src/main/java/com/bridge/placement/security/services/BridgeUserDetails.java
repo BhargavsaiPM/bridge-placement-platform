@@ -91,7 +91,8 @@ public class BridgeUserDetails implements UserDetails {
                 officer.getEmail(),
                 officer.getEmail(),
                 officer.getPassword(),
-                authorities);
+                authorities,
+                officer.isApproved() && officer.isActive());
     }
 
     public static BridgeUserDetails build(Admin admin) {

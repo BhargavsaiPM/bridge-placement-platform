@@ -8,8 +8,9 @@ export const companyApi = {
     // Officers
     getOfficers: () => api.get('/company/officers'),
     createOfficer: (data) => api.post('/company/create-placement-officer', data),
-    blockOfficer: (id) => api.put(`/company/officer/${id}/block`),
-    unblockOfficer: (id) => api.put(`/company/officer/${id}/unblock`),
+    blockOfficer: (id) => api.put(`/company/officer/${id}/deactivate`),
+    unblockOfficer: (id) => api.put(`/company/officer/${id}/activate`),
+    resetOfficerPassword: (id, data) => api.put(`/company/officer/${id}/reset-password`, data),
     getOfficerLogs: () => api.get('/company/officer/logs'),
 
     // Jobs

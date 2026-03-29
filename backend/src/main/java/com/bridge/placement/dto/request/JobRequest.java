@@ -20,6 +20,11 @@ public class JobRequest {
     private String description;
 
     @NotBlank
+    private String minimumQualifications;
+
+    private String preferredQualifications;
+
+    @NotBlank
     private String requiredSkills;
 
     private String preferredSkills; // Optional bonus skills (B17 fix)
@@ -43,6 +48,7 @@ public class JobRequest {
     private LocalDate applicationDeadline;
 
     private Integer maxApplicants;
+    private List<Long> assignedOfficerIds;
 
     // Rounds
     private List<String> rounds;

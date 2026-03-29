@@ -16,17 +16,21 @@ export default function OfficerDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // For now, let's fetch jobs and calculate stats manually or use a dedicated endpoint
                 const res = await officerApi.getJobs();
                 const jobs = Array.isArray(res.data) ? res.data : [];
 
                 const active = jobs.filter(j => j.status === 'OPEN').length;
-                let applicants = 0;
-                let selected = 0;
-                jobs.forEach(j => {
-                    applicants += (j.applications ? j.applications.length : 0);
-                    selected += (j.applications ? j.applications.filter(a => a.status === 'SELECTED').length : 0);
-                });
+                const applicationResponses = await Promise.all(
+                    jobs.map(async (job) => {
+                        const appRes = await officerApi.getApplicationsForJob(job.id);
+                        return Array.isArray(appRes.data?.applications) ? appRes.data.applications : [];
+                    })
+                );
+                const allApplications = applicationResponses.flat();
+                const applicants = allApplications.length;
+                const selected = allApplications.filter((application) =>
+                    (application.status || application.applicationStatus) === 'SELECTED'
+                ).length;
 
                 setStats({
                     activeJobs: active,
@@ -50,7 +54,7 @@ export default function OfficerDashboard() {
     }, []);
 
     const statCards = [
-        { label: 'Active Jobs', value: stats.activeJobs, icon: Briefcase, color: 'text-primary', bg: 'bg-primary/10' },
+        { label: 'Active Job Posts', value: stats.activeJobs, icon: Briefcase, color: 'text-primary', bg: 'bg-primary/10' },
         { label: 'Total Applicants', value: stats.totalApplicants, icon: Users, color: 'text-secondary', bg: 'bg-secondary/10' },
         { label: 'Selected Students', value: stats.selectedStudents, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
         { label: 'Upcoming Deadlines', value: stats.upcomingDeadlines, icon: Clock, color: 'text-danger', bg: 'bg-danger/10' },
@@ -110,7 +114,7 @@ export default function OfficerDashboard() {
                             <div className="grid grid-cols-2 gap-4">
                                 <Link to="/officer/jobs" className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center group cursor-pointer block">
                                     <Briefcase className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-white">Post New Job</span>
+                                    <span className="text-sm font-medium text-white">Manage Jobs</span>
                                 </Link>
                                 <Link to="/officer/applicants" className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center group cursor-pointer block">
                                     <Users className="w-6 h-6 text-secondary mx-auto mb-2 group-hover:scale-110 transition-transform" />
@@ -132,7 +136,7 @@ export default function OfficerDashboard() {
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                     <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                    <p className="text-white">Posted new job: Frontend Developer</p>
+                                    <p className="text-white">Opened assigned job brief for Frontend Developer</p>
                                     <span className="ml-auto text-text-secondary text-xs">1d ago</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">

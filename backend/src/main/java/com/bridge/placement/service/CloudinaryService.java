@@ -50,6 +50,10 @@ public class CloudinaryService {
         }
     }
 
+    public boolean isConfigured() {
+        return this.cloudinary != null;
+    }
+
     /**
      * Uploads a file to Cloudinary with type/size validation.
      * Returns: permanent secure URL from Cloudinary.

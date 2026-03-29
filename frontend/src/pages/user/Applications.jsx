@@ -30,7 +30,9 @@ export default function Applications() {
         fetchApplications();
     }, []);
 
-    const filtered = filter === 'ALL' ? applications : applications.filter(a => a.status === filter);
+    const getStatus = (application) => application.status || application.applicationStatus || 'APPLIED';
+
+    const filtered = filter === 'ALL' ? applications : applications.filter(a => getStatus(a) === filter);
 
     const filters = [
         { key: 'ALL', label: 'All', icon: FileText },
@@ -86,7 +88,7 @@ export default function Applications() {
             ) : (
                 <div className="space-y-3">
                     {filtered.map((app, i) => {
-                        const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG['APPLIED'];
+                        const cfg = STATUS_CONFIG[getStatus(app)] || STATUS_CONFIG['APPLIED'];
                         return (
                             <motion.div
                                 key={app.id || i}

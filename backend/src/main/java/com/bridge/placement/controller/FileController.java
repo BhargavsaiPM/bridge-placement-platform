@@ -22,13 +22,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FileController {
 
-    private final CloudinaryService cloudinaryService;
+    private final com.bridge.placement.service.FileStorageService fileStorageService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("isAuthenticated()")   // B35 fix: must be logged in to upload
+    // removed PreAuthorize to allow unauthenticated registration uploads
     public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile file) {
-        // B34: Validation (type and size) is done inside CloudinaryService.uploadFile()
-        String fileUrl = cloudinaryService.uploadFile(file);
+        String fileUrl = fileStorageService.storeFile(file);
         return ResponseEntity.ok(Collections.singletonMap("url", fileUrl));
     }
 

@@ -1,25 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { officerApi } from '../../api/officerApi';
 import { GraduationCap, Briefcase, CheckCircle2 } from 'lucide-react';
 
 export default function OfficerStudents() {
     const [jobs, setJobs] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const selectedJobId = searchParams.get('jobId');
 
     useEffect(() => {
-        const fetchJobs = async () => {
+        const fetchJobsAndStudents = async () => {
             try {
                 const res = await officerApi.getJobs();
-                setJobs(Array.isArray(res.data) ? res.data : []);
+                const jobsData = Array.isArray(res.data) ? res.data : [];
+                setJobs(jobsData);
+
+                const scopedJobs = selectedJobId
+                    ? jobsData.filter((job) => String(job.id) === selectedJobId)
+                    : jobsData;
+
+                const appResponses = await Promise.all(
+                    scopedJobs.map(async (job) => {
+                        const appRes = await officerApi.getApplicationsForJob(job.id);
+                        const items = Array.isArray(appRes.data?.applications) ? appRes.data.applications : [];
+                        return items
+                            .filter((app) => (app.status || app.applicationStatus) === 'SELECTED')
+                            .map((app) => ({
+                                ...app,
+                                jobTitle: job.title,
+                                jobId: job.id,
+                            }));
+                    })
+                );
+
+                setSelectedStudents(appResponses.flat());
             } catch (err) {
                 console.error('Failed to load selected students:', err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchJobs();
-    }, []);
+
+        fetchJobsAndStudents();
+    }, [selectedJobId]);
 
     if (loading) {
         return (
@@ -28,17 +54,6 @@ export default function OfficerStudents() {
             </div>
         );
     }
-
-    // Get all selected students across all jobs
-    const selectedStudents = jobs.flatMap(job =>
-        (job.applications || [])
-            .filter(app => app.status === 'SELECTED')
-            .map(app => ({
-                ...app,
-                jobTitle: job.title,
-                jobId: job.id,
-            }))
-    );
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -67,10 +82,10 @@ export default function OfficerStudents() {
                         >
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center text-success font-bold">
-                                    {(student.user?.name || 'S').charAt(0)}
+                                    {(student.user?.fullName || student.user?.firstName || 'S').charAt(0)}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-white text-sm">{student.user?.name || 'Student'}</p>
+                                    <p className="font-bold text-white text-sm">{student.user?.fullName || [student.user?.firstName, student.user?.lastName].filter(Boolean).join(' ') || 'Student'}</p>
                                     <p className="text-xs text-text-secondary">{student.user?.email || ''}</p>
                                 </div>
                             </div>

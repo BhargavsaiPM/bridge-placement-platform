@@ -91,7 +91,7 @@ export default function SelectedStudents() {
                                         </td>
                                         <td className="p-4 text-text-secondary">{s.role || 'SDE'}</td>
                                         <td className="p-4 text-success font-bold">
-                                            ₹{s.salary ? s.salary.toLocaleString() : '0'} LPA
+                                            {s.salaryRange || (s.salary ? `Rs ${s.salary.toLocaleString()} LPA` : 'Pending')}
                                         </td>
                                         <td className="p-4 text-text-secondary">
                                             {s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : 'Pending'}

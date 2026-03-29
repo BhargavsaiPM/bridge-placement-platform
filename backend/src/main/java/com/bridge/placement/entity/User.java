@@ -74,6 +74,13 @@ public class User extends BaseEntity {
     @Column(length = 1000)
     private String employeeIdCardUrl; // jpg/png
 
+    // ===== Shared Education / Experience =====
+    private String highestQualification;
+    private Double cgpa;
+    private String specialization;
+    private Integer passingYear;
+    private Integer experienceYears;
+
     // ===== Personal Address =====
     private String country;
     private String state;

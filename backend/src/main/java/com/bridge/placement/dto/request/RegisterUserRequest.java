@@ -77,4 +77,9 @@ public class RegisterUserRequest {
     private String skills; // Comma-separated
     private String achievements;
     private String profilePhoto;
+    private String highestQualification;
+    private Double cgpa;
+    private String specialization;
+    private Integer passingYear;
+    private Integer experienceYears;
 }

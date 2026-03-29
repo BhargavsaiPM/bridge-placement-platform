@@ -36,6 +36,12 @@ public class Company extends BaseEntity {
 
     private String branchAddress;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 1000)
+    private String profilePhoto;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CompanyType companyType;
@@ -45,6 +51,9 @@ public class Company extends BaseEntity {
 
     @Column(nullable = false)
     private boolean approved = false;
+
+    @Column(nullable = false)
+    private boolean blocked = false;
 
     private boolean createdByAdmin = false;
 

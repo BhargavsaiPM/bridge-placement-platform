@@ -16,6 +16,9 @@ public class UpdateCompanyProfileRequest {
     @NotBlank(message = "Branch address is required")
     private String branchAddress;
 
+    private String description;
+    private String profilePhoto;
+
     @NotNull(message = "Company type is required")
     private CompanyType companyType;
 }
