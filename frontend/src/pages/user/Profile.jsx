@@ -10,6 +10,7 @@ import {
     Loader2, ShieldCheck, Star, BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAssetUrl } from '../../api/runtime';
 
 const getFullName = (profile) => {
     if (!profile) return '';
@@ -46,12 +47,6 @@ const formatAddress = (source) =>
     ]
         .filter(Boolean)
         .join(', ');
-
-const getAssetUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `http://localhost:9092${url}`;
-};
 
 export default function UserProfile() {
     const [profile, setProfile] = useState(null);
@@ -242,11 +237,7 @@ export default function UserProfile() {
     };
 
     // Fix resume URL - if it's already a full URL (Cloudinary), use as-is
-    const getResumeUrl = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http://') || url.startsWith('https://')) return url;
-        return `http://localhost:9092${url}`;
-    };
+    const getResumeUrl = (url) => getAssetUrl(url);
 
     if (loading) {
         return (

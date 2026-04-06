@@ -1,45 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { companyApi } from '../../api/companyApi';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-    LineChart, Line,
-    BarChart, Bar,
-    PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from 'recharts';
+import { companyApi } from '../../api/companyApi';
 
-const COLORS = ['#2CE6B3', '#4DA3FF', '#7B61FF', '#FFB84D', '#FF5A7A'];
+const COLORS = ['#2CE6B3', '#4DA3FF', '#FFB84D', '#FF5A7A', '#7B61FF'];
+
+const countBy = (items, selector, fallbackLabel) => {
+    const counts = new Map();
+
+    items.forEach((item) => {
+        const key = selector(item) || fallbackLabel;
+        counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    return Array.from(counts.entries()).map(([name, value]) => ({ name, value }));
+};
 
 export default function Analytics() {
-    const [hiresData, setHiresData] = useState([]);
-    const [successData, setSuccessData] = useState([]);
-    const [appsData, setAppsData] = useState([]);
-    const [packageData, setPackageData] = useState([]);
+    const [jobs, setJobs] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchAll = async () => {
+        const fetchAnalyticsSourceData = async () => {
             try {
-                const [hires, success, apps, packages] = await Promise.all([
-                    companyApi.getHiresMonthly(),
-                    companyApi.getSuccessRate(),
-                    companyApi.getAppsPerJob(),
-                    companyApi.getPackageRole()
+                const [jobsResponse, selectedStudentsResponse] = await Promise.all([
+                    companyApi.getJobs(),
+                    companyApi.getSelectedStudents(),
                 ]);
 
-                // Handle mock fallback data if backend endpoints are not seeded yet
-                setHiresData(hires.data?.length ? hires.data : [{ month: 'Jan', hires: 0 }]);
-                setSuccessData(success.data?.length ? success.data : [{ name: 'Data', value: 100 }]);
-                setAppsData(apps.data?.length ? apps.data : [{ job: 'No Data', apps: 0 }]);
-                setPackageData(packages.data?.length ? packages.data : [{ role: 'No Data', package: 0 }]);
-            } catch (err) {
-                console.error("Failed to load analytics", err);
+                setJobs(Array.isArray(jobsResponse.data) ? jobsResponse.data : []);
+                setSelectedStudents(Array.isArray(selectedStudentsResponse.data) ? selectedStudentsResponse.data : []);
+            } catch (error) {
+                console.error('Failed to load company analytics source data', error);
+                setJobs([]);
+                setSelectedStudents([]);
             } finally {
                 setLoading(false);
             }
         };
-        fetchAll();
+
+        fetchAnalyticsSourceData();
     }, []);
+
+    const openJobs = useMemo(
+        () => jobs.filter((job) => String(job.status || '').toUpperCase() === 'OPEN').length,
+        [jobs]
+    );
+    const selectedByRole = useMemo(
+        () => countBy(selectedStudents, (student) => student.role, 'Unassigned Role'),
+        [selectedStudents]
+    );
+    const selectedByPackage = useMemo(
+        () => countBy(selectedStudents, (student) => student.salaryRange, 'Package Pending'),
+        [selectedStudents]
+    );
+    const pipelineMix = useMemo(
+        () => [
+            { name: 'Open Jobs', value: openJobs },
+            { name: 'Closed Jobs', value: Math.max(0, jobs.length - openJobs) },
+        ],
+        [jobs.length, openJobs]
+    );
 
     if (loading) {
         return (
@@ -48,22 +81,6 @@ export default function Analytics() {
             </div>
         );
     }
-
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-[#0F1629] border border-white/10 p-3 rounded-xl shadow-lg">
-                    <p className="text-white font-bold">{label}</p>
-                    {payload.map((entry, index) => (
-                        <p key={index} style={{ color: entry.color }} className="text-sm">
-                            {entry.name}: {entry.value}
-                        </p>
-                    ))}
-                </div>
-            );
-        }
-        return null;
-    };
 
     return (
         <motion.div
@@ -76,77 +93,72 @@ export default function Analytics() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
                     Recruitment Analytics
                 </h1>
-                <p className="text-text-secondary mt-1 text-sm">Visualize hiring trends, success rates, and comparative statistics.</p>
+                <p className="text-text-secondary mt-1 text-sm">
+                    Live company insights generated from the jobs and selected-candidates data that already exists.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="glass-panel p-5">
+                    <p className="text-xs uppercase tracking-[0.16em] text-text-secondary">Total Jobs</p>
+                    <p className="mt-3 text-3xl font-bold text-white">{jobs.length}</p>
+                </div>
+                <div className="glass-panel p-5">
+                    <p className="text-xs uppercase tracking-[0.16em] text-text-secondary">Open Jobs</p>
+                    <p className="mt-3 text-3xl font-bold text-white">{openJobs}</p>
+                </div>
+                <div className="glass-panel p-5">
+                    <p className="text-xs uppercase tracking-[0.16em] text-text-secondary">Selected Candidates</p>
+                    <p className="mt-3 text-3xl font-bold text-white">{selectedStudents.length}</p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* Hires per Month - Line Chart */}
                 <div className="glass-panel p-6">
-                    <h3 className="text-lg font-bold mb-6">Hires per Month</h3>
-                    <div className="h-72">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={hiresData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                <XAxis dataKey="month" stroke="#9FB0D9" />
-                                <YAxis stroke="#9FB0D9" />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Line type="monotone" dataKey="hires" stroke="#2CE6B3" strokeWidth={3} dot={{ r: 4, fill: '#2CE6B3' }} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Success Rate - Pie Chart */}
-                <div className="glass-panel p-6">
-                    <h3 className="text-lg font-bold mb-6">Pipeline Conversion</h3>
+                    <h3 className="text-lg font-bold mb-6">Job Pipeline Mix</h3>
                     <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={successData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                    {successData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Pie data={pipelineMix} dataKey="value" nameKey="name" innerRadius={60} outerRadius={82}>
+                                    {pipelineMix.map((entry, index) => (
+                                        <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend iconType="circle" />
+                                <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Applications Per Job - Bar Chart */}
                 <div className="glass-panel p-6">
-                    <h3 className="text-lg font-bold mb-6">Applications per Role</h3>
+                    <h3 className="text-lg font-bold mb-6">Selected Candidates by Role</h3>
                     <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={appsData}>
+                            <BarChart data={selectedByRole}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                <XAxis dataKey="job" stroke="#9FB0D9" tick={{ fontSize: 12 }} />
-                                <YAxis stroke="#9FB0D9" />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="apps" fill="#4DA3FF" radius={[4, 4, 0, 0]} />
+                                <XAxis dataKey="name" stroke="#9FB0D9" tick={{ fontSize: 11 }} />
+                                <YAxis stroke="#9FB0D9" allowDecimals={false} />
+                                <Tooltip />
+                                <Bar dataKey="value" fill="#4DA3FF" radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Package Offered - Bar Chart */}
-                <div className="glass-panel p-6">
-                    <h3 className="text-lg font-bold mb-6">Avg Package (LPA)</h3>
-                    <div className="h-72">
+                <div className="glass-panel p-6 lg:col-span-2">
+                    <h3 className="text-lg font-bold mb-6">Selected Candidates by Offered Package</h3>
+                    <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={packageData} layout="vertical">
+                            <BarChart data={selectedByPackage}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                <XAxis type="number" stroke="#9FB0D9" />
-                                <YAxis dataKey="role" type="category" stroke="#9FB0D9" tick={{ fontSize: 12 }} width={100} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="package" fill="#7B61FF" radius={[0, 4, 4, 0]} />
+                                <XAxis dataKey="name" stroke="#9FB0D9" tick={{ fontSize: 11 }} />
+                                <YAxis stroke="#9FB0D9" allowDecimals={false} />
+                                <Tooltip />
+                                <Bar dataKey="value" fill="#2CE6B3" radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-
             </div>
         </motion.div>
     );

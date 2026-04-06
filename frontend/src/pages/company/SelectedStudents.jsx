@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { companyApi } from '../../api/companyApi';
 import { motion } from 'framer-motion';
-import { DownloadCloud, FileText, LayoutGrid } from 'lucide-react';
+import { FileText, LayoutGrid } from 'lucide-react';
 
 export default function SelectedStudents() {
     const [students, setStudents] = useState([]);
@@ -13,23 +13,6 @@ export default function SelectedStudents() {
             .catch(err => console.error("Failed to load selected students", err))
             .finally(() => setLoading(false));
     }, []);
-
-    const handleExport = async (format) => {
-        try {
-            const apiCall = format === 'pdf' ? companyApi.exportPdf : companyApi.exportExcel;
-            const response = await apiCall();
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `selected_students.${format === 'excel' ? 'xlsx' : 'pdf'}`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (err) {
-            alert(`Failed to export ${format.toUpperCase()}`);
-        }
-    };
 
     return (
         <motion.div
@@ -48,18 +31,24 @@ export default function SelectedStudents() {
 
                 <div className="flex gap-3">
                     <button
-                        onClick={() => handleExport('pdf')}
-                        className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-text-primary hover:bg-white/10 transition"
+                        type="button"
+                        disabled
+                        className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-text-secondary/70 cursor-not-allowed"
                     >
                         <FileText className="w-4 h-4 text-warning" /> Export PDF
                     </button>
                     <button
-                        onClick={() => handleExport('excel')}
-                        className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-text-primary hover:bg-white/10 transition"
+                        type="button"
+                        disabled
+                        className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-text-secondary/70 cursor-not-allowed"
                     >
                         <LayoutGrid className="w-4 h-4 text-success" /> Export Excel
                     </button>
                 </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-text-secondary">
+                Export files are intentionally disabled until backend export endpoints are implemented.
             </div>
 
             <div className="glass-panel overflow-hidden">

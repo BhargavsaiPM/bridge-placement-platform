@@ -238,8 +238,7 @@ public class JobService {
             throw new RuntimeException("Unauthorized: Job does not belong to this company");
         }
 
-        long activeApplications = job.getRounds().isEmpty() ? 0 :
-                applicationRepository.countByJobId(jobId);
+        long activeApplications = applicationRepository.countByJobId(jobId);
         if (activeApplications > 0) {
             throw new RuntimeException("Cannot delete job with existing applications. Close it instead.");
         }

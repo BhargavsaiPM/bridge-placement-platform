@@ -172,6 +172,7 @@ public class AdminController {
         long shortlisted = allApps.stream().filter(a -> a.getApplicationStatus() == ApplicationStatus.SHORTLISTED)
                 .count();
         long interview = allApps.stream().filter(a -> a.getApplicationStatus() == ApplicationStatus.INTERVIEW).count();
+        long technicalRound = allApps.stream().filter(a -> a.getApplicationStatus() == ApplicationStatus.TECHNICAL_ROUND).count();
         long selected = allApps.stream().filter(a -> a.getApplicationStatus() == ApplicationStatus.SELECTED).count();
         long rejected = allApps.stream().filter(a -> a.getApplicationStatus() == ApplicationStatus.REJECTED).count();
 
@@ -179,6 +180,7 @@ public class AdminController {
                 Map.of("name", "Applied", "value", applied),
                 Map.of("name", "Shortlisted", "value", shortlisted),
                 Map.of("name", "Interview", "value", interview),
+                Map.of("name", "Technical Round", "value", technicalRound),
                 Map.of("name", "Selected", "value", selected),
                 Map.of("name", "Rejected", "value", rejected)));
     }

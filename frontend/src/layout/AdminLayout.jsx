@@ -2,20 +2,16 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import { getStoredTokenPayload, hasRole } from '../utils/auth';
 
 export default function AdminLayout() {
-    const token = localStorage.getItem('token');
+    const payload = getStoredTokenPayload();
 
-    if (!token) {
+    if (!payload) {
         return <Navigate to="/login" replace />;
     }
 
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.role !== 'SUPER_ADMIN') {
-            return <Navigate to="/login" replace />;
-        }
-    } catch (e) {
+    if (!hasRole(payload, 'SUPER_ADMIN')) {
         return <Navigate to="/login" replace />;
     }
 

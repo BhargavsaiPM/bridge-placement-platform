@@ -8,7 +8,7 @@ export default function OfficerDashboard() {
     const [stats, setStats] = useState({
         activeJobs: 0,
         totalApplicants: 0,
-        selectedStudents: 0,
+        selectedUsers: 0,
         upcomingDeadlines: 0
     });
     const [loading, setLoading] = useState(true);
@@ -28,14 +28,14 @@ export default function OfficerDashboard() {
                 );
                 const allApplications = applicationResponses.flat();
                 const applicants = allApplications.length;
-                const selected = allApplications.filter((application) =>
-                    (application.status || application.applicationStatus) === 'SELECTED'
+                const shortlisted = allApplications.filter((application) =>
+                    (application.status || application.applicationStatus) === 'SHORTLISTED'
                 ).length;
 
                 setStats({
                     activeJobs: active,
                     totalApplicants: applicants,
-                    selectedStudents: selected,
+                    selectedUsers: shortlisted,
                     upcomingDeadlines: jobs.filter(j => {
                         if (!j.applicationDeadline) return false;
                         const days = (new Date(j.applicationDeadline) - new Date()) / (1000 * 60 * 60 * 24);
@@ -56,7 +56,7 @@ export default function OfficerDashboard() {
     const statCards = [
         { label: 'Active Job Posts', value: stats.activeJobs, icon: Briefcase, color: 'text-primary', bg: 'bg-primary/10' },
         { label: 'Total Applicants', value: stats.totalApplicants, icon: Users, color: 'text-secondary', bg: 'bg-secondary/10' },
-        { label: 'Selected Students', value: stats.selectedStudents, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+        { label: 'Selected Users', value: stats.selectedUsers, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
         { label: 'Upcoming Deadlines', value: stats.upcomingDeadlines, icon: Clock, color: 'text-danger', bg: 'bg-danger/10' },
     ];
 

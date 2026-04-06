@@ -40,6 +40,7 @@ public class InterviewSlotService {
 
         PlacementOfficer officer = placementOfficerRepository.findById(officerId)
                 .orElseThrow(() -> new RuntimeException("Officer not found"));
+        validateOfficerAccess(application, officer);
 
         InterviewSlot slot = new InterviewSlot();
         slot.setApplication(application);
@@ -68,15 +69,39 @@ public class InterviewSlotService {
     /**
      * Get all interview slots created by an officer's company for an application.
      */
-    public List<InterviewSlot> getInterviewSlots(Long applicationId) {
+    public List<InterviewSlot> getInterviewSlots(Long officerId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        PlacementOfficer officer = placementOfficerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+        validateOfficerAccess(application, officer);
         return interviewSlotRepository.findByApplicationIdOrderByScheduledAtAsc(applicationId);
     }
 
     /**
      * Get the latest interview slot for an application (for student view).
      */
-    public InterviewSlot getLatestSlot(Long applicationId) {
+    public InterviewSlot getLatestSlot(Long userId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        if (!application.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access to this interview.");
+        }
+
         return interviewSlotRepository.findTopByApplicationIdOrderByCreatedAtDesc(applicationId)
                 .orElseThrow(() -> new RuntimeException("No interview scheduled yet for this application"));
+    }
+
+    private void validateOfficerAccess(Application application, PlacementOfficer officer) {
+        boolean assignedToJob = application.getJob().getAssignedOfficers().stream()
+                .anyMatch(assignedOfficer -> assignedOfficer.getId().equals(officer.getId()));
+
+        if (!officer.isApproved() || !officer.isActive()) {
+            throw new RuntimeException("Officer account is not active.");
+        }
+        if (!application.getJob().getCompany().getId().equals(officer.getCompany().getId()) || !assignedToJob) {
+            throw new RuntimeException("Unauthorized access to this application.");
+        }
     }
 }

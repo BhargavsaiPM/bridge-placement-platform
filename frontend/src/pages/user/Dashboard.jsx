@@ -19,6 +19,7 @@ const STATUS_CONFIG = {
     APPLIED: { label: 'Pending', color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/30' },
     SHORTLISTED: { label: 'Shortlisted', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30' },
     INTERVIEW: { label: 'Interview', color: 'text-secondary', bg: 'bg-secondary/10', border: 'border-secondary/30' },
+    TECHNICAL_ROUND: { label: 'Technical Round', color: 'text-cyan-300', bg: 'bg-cyan-400/10', border: 'border-cyan-300/30' },
     SELECTED: { label: 'Selected', color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' },
     REJECTED: { label: 'Rejected', color: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/30' },
 };
@@ -68,6 +69,7 @@ export default function UserDashboard() {
         { label: 'Pending', value: countByStatus('APPLIED'), icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
         { label: 'Shortlisted', value: countByStatus('SHORTLISTED'), icon: Users, color: 'text-secondary', bg: 'bg-secondary/10' },
         { label: 'Interviews', value: countByStatus('INTERVIEW'), icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
+        { label: 'Technical', value: countByStatus('TECHNICAL_ROUND'), icon: TrendingUp, color: 'text-cyan-300', bg: 'bg-cyan-400/10' },
         { label: 'Selected', value: countByStatus('SELECTED'), icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
         { label: 'Rejected', value: countByStatus('REJECTED'), icon: X, color: 'text-danger', bg: 'bg-danger/10' },
     ];
@@ -118,7 +120,7 @@ export default function UserDashboard() {
                 <p className="text-text-secondary">Here&apos;s your placement journey at a glance.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-7">
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
 

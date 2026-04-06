@@ -4,6 +4,7 @@ import { authApi } from '../../api/authApi';
 import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logoImg from '../../assets/Bridge-logo.png';
+import { getDashboardPathForPayload, getStoredTokenPayload } from '../../utils/auth';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -32,23 +33,8 @@ export default function Login() {
 
             if (token && typeof token === 'string') {
                 localStorage.setItem('token', token);
-
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    const rolesStr = JSON.stringify(payload);
-
-                    if (rolesStr.includes('SUPER_ADMIN')) {
-                        navigate('/admin/dashboard');
-                    } else if (rolesStr.includes('COMPANY')) {
-                        navigate('/company/dashboard');
-                    } else if (rolesStr.includes('PLACEMENT_OFFICER')) {
-                        navigate('/officer/dashboard');
-                    } else {
-                        navigate('/user/dashboard');
-                    }
-                } catch (e) {
-                    navigate('/jobs');
-                }
+                const payload = getStoredTokenPayload();
+                navigate(getDashboardPathForPayload(payload));
             } else {
                 throw new Error("Invalid token format received");
             }

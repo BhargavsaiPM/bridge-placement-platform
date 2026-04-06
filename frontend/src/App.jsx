@@ -23,6 +23,7 @@ import OfficerProfile from './pages/officer/Profile';
 import OfficerJobs from './pages/officer/Jobs';
 import OfficerDashboard from './pages/officer/Dashboard';
 import OfficerApplicants from './pages/officer/Applicants';
+import ApplicantDetail from './pages/officer/ApplicantDetail';
 import OfficerStudents from './pages/officer/Students';
 
 // Admin Pages
@@ -73,6 +74,7 @@ function App() {
           <Route path="jobs" element={<OfficerJobs />} />
           <Route path="jobs/:id" element={<ManageJobDetail role="officer" />} />
           <Route path="applicants" element={<OfficerApplicants />} />
+          <Route path="applicants/:applicationId" element={<ApplicantDetail />} />
           <Route path="students" element={<OfficerStudents />} />
         </Route>
 

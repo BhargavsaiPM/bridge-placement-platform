@@ -7,5 +7,14 @@ export const officerApi = {
 
     // Jobs
     getJobs: () => api.get('/officer/jobs'),
-    getApplicationsForJob: (jobId) => api.get(`/officer/applications/${jobId}`),
+    getApplicationsForJob: (jobId, params = { page: 0, size: 100 }) =>
+        api.get(`/officer/applications/${jobId}`, { params }),
+    getApplicationById: (applicationId) => api.get(`/officer/application/${applicationId}`),
+    updateApplicationStatus: (applicationId, status) =>
+        api.put('/officer/application/status', null, { params: { applicationId, status } }),
+    setApplicationRemark: (applicationId, data) =>
+        api.put(`/officer/application/${applicationId}/remark`, data),
+    getApplicationScore: (applicationId) => api.get(`/applications/${applicationId}/score`),
+    getInterviewSlots: (applicationId) => api.get(`/officer/application/${applicationId}/interview-slots`),
+    scheduleInterview: (applicationId, data) => api.post(`/officer/application/${applicationId}/schedule-interview`, data),
 };

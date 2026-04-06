@@ -74,6 +74,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- PDF Parsing for ATS -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.29</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

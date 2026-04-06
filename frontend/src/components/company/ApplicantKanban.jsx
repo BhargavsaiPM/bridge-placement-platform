@@ -6,6 +6,7 @@ const COLUMNS = [
     { id: 'APPLIED', title: 'Applied', color: 'bg-white/5' },
     { id: 'SHORTLISTED', title: 'Shortlisted', color: 'bg-warning/20 text-warning' },
     { id: 'INTERVIEW', title: 'Interview', color: 'bg-primary/20 text-primary' },
+    { id: 'TECHNICAL_ROUND', title: 'Technical Round', color: 'bg-cyan-400/20 text-cyan-300' },
     { id: 'SELECTED', title: 'Selected', color: 'bg-success/20 text-success' },
     { id: 'REJECTED', title: 'Rejected', color: 'bg-danger/20 text-danger' }
 ];

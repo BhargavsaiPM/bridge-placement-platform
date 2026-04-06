@@ -50,10 +50,6 @@ export const adminApi = {
     getStudentProgress: () => api.get('/admin/student-progress'),
     updateStudentProgress: (studentId, data) => api.put(`/admin/student-progress/${studentId}`, data),
 
-    // Reports
-    exportPdf: () => api.get('/admin/export/pdf', { responseType: 'blob' }),
-    exportExcel: () => api.get('/admin/export/excel', { responseType: 'blob' }),
-
     // Profile
     getProfile: () => api.get('/admin/profile'),
     updateProfile: (data) => api.put('/admin/profile', data),

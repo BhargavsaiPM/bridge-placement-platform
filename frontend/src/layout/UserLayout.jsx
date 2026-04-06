@@ -2,16 +2,11 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import UserSidebar from './UserSidebar';
 import UserTopNav from './UserTopNav';
+import { getStoredTokenPayload, hasRole } from '../utils/auth';
 
 export default function UserLayout() {
-    const token = localStorage.getItem('token');
-    if (!token) return <Navigate to="/login" replace />;
-
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const role = payload.role;
-        if (role !== 'USER') return <Navigate to="/login" replace />;
-    } catch (e) {
+    const payload = getStoredTokenPayload();
+    if (!payload || !hasRole(payload, 'USER')) {
         return <Navigate to="/login" replace />;
     }
 

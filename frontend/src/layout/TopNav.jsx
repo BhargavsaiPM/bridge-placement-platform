@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { adminApi } from '../api/adminApi';
+import { getAssetUrl } from '../api/runtime';
 
 const getAdminInitial = (name) => {
     const trimmedName = name?.trim();
@@ -61,7 +62,7 @@ export default function TopNav() {
                         <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-primary/50 bg-white/10">
                             {profileData.profilePhoto ? (
                                 <img
-                                    src={`http://localhost:9092${profileData.profilePhoto}`}
+                                    src={getAssetUrl(profileData.profilePhoto)}
                                     alt="Admin Profile"
                                     className="h-full w-full object-cover"
                                 />

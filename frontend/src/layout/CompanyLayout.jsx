@@ -2,30 +2,16 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import CompanySidebar from './CompanySidebar';
 import CompanyTopNav from './CompanyTopNav';
-
-// Basic JWT parse utility strictly for frontend routing protection
-const parseJwt = (token) => {
-    try {
-        return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-        return null;
-    }
-};
+import { getStoredTokenPayload, hasRole } from '../utils/auth';
 
 export default function CompanyLayout() {
-    const token = localStorage.getItem('token');
+    const payload = getStoredTokenPayload();
 
-    if (!token) {
+    if (!payload) {
         return <Navigate to="/login" replace />;
     }
 
-    // Validate ROLE_COMPANY
-    const decodedData = parseJwt(token);
-    // Assuming Spring Security sets authorities array, e.g. [{ authority: "ROLE_COMPANY" }] 
-    // or a direct role field depending on backend token format. Checking substring for safety.
-    const isCompany = decodedData && decodedData.sub && JSON.stringify(decodedData).includes("COMPANY");
-
-    if (!isCompany && !JSON.stringify(decodedData).includes("SUPER_ADMIN")) {
+    if (!hasRole(payload, 'COMPANY') && !hasRole(payload, 'SUPER_ADMIN')) {
         return <Navigate to="/login" replace />;
     }
 

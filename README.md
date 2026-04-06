@@ -1,91 +1,81 @@
 # Bridge Placement Platform
 
-A comprehensive platform for managing college placements, connecting students, companies, and placement officers. Built with a high-performance Spring Boot backend and a modern, glassy React frontend.
+Bridge is a role-based placement platform for students, working professionals, companies, placement officers, and super admins.
+
+## Stack
+
+- Frontend: React 19, Vite, Tailwind CSS, Framer Motion
+- Backend: Spring Boot 3.2, Spring Security, Spring Data JPA
+- Database: PostgreSQL
+- Auth: JWT
+- File uploads: Cloudinary
+
+## Current Product Scope
+
+- Public job browsing and landing-page stats
+- User and company registration
+- OTP-based password reset
+- Company job management
+- Officer applicant review, AILS score review, and interview scheduling
+- User application tracking with interview visibility
+- In-app notifications for users, companies, and officers
+- Admin approval and management flows
+
+## Important Runtime Notes
+
+- New uploads go through Cloudinary. Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` before testing file uploads.
+- JWT startup now requires `JWT_SECRET` to be set and to be at least 32 characters long.
+- Demo seed data is disabled by default. Enable it with `APP_DEMO_SEED_ENABLED=true`.
+- Generated artifacts such as `backend/target`, `frontend/dist`, and `backend/uploads` are intentionally ignored at the repo root.
 
 ## Project Structure
 
+- `backend/`: Spring Boot API, security, services, repositories, entities
+- `frontend/`: React app, shared API client, layouts, role-specific pages
+- `PROJECT_AUDIT.md`: audit notes and action plan used for this cleanup pass
+- `DEPLOYMENT_GUIDE.md`: deployment guidance and environment checklist
+
+## Local Setup
+
 ### Backend
-- **Framework**: Spring Boot 3.x
-- **Location**: `/backend`
-- **Build**: Maven (`pom.xml`)
-- **Java Package**: `com.bridge.placement`
-  - `config/` - Security, Data Initializer, and App configurations
-  - `controller/` - REST API controllers (Admin, Job, Application, Interview, Notification, etc.)
-  - `dto/` - Data Transfer Objects for API requests/responses
-  - `entity/` - JPA entities (PostgreSQL/H2 mapping)
-  - `enums/` - Enumerated types (Role, Status, Mode)
-  - `exception/` - Global exception handling
-  - `service/` - Core business logic implementation
-  - `repository/` - Spring Data JPA repositories
+
+1. Copy `backend/.env.example` into your preferred local environment source.
+2. Provide at least:
+   - `SPRING_DATASOURCE_URL`
+   - `SPRING_DATASOURCE_USERNAME`
+   - `SPRING_DATASOURCE_PASSWORD`
+   - `JWT_SECRET`
+   - Cloudinary credentials if you want uploads to work
+3. Run:
+
+```powershell
+cd backend
+mvn spring-boot:run
+```
+
+Backend default URL: `http://localhost:9092/api`
 
 ### Frontend
-- **Framework**: React + Vite (Fast HMR)
-- **Location**: `/frontend`
-- **Styling**: Vanilla CSS with modern Glassmorphism (Apple/Google inspired)
-- **Navigation**: React Router with Role-based protected routes
-- **Package Manager**: npm
 
-#### Frontend Structure
-- `src/`
-  - `api/` - Modular API integration (Axios-based)
-  - `components/` - Reusable UI elements (Buttons, Inputs, Modals)
-  - `layout/` - Standardized Layouts (Sidebar on the left, Header on top)
-  - `pages/` - Role-specific views (Admin, Company, Officer, User, Public)
-  - `assets/` - Images, logos, and global styles
-  - `App.jsx` - Main application with Routing infrastructure
+1. Copy `frontend/.env.example` and set `VITE_API_URL` if needed.
+2. Run:
 
-## User Roles
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-- **Admin**: Full platform management, user/company approvals, and system activity monitoring.
-- **Company**: Job posting, applicant screening, and recruitment cycle management.
-- **Officer**: Student/Job matching, interview scheduling, and placement reporting.
-- **User (Student)**: Profile management, job search, and application tracking.
-- **Public**: Access to browse jobs and basic platform information.
+Frontend default URL: `http://localhost:5173`
 
-## Key Features
+## Verification
 
-- **Job Management**: End-to-end recruitment workflow from posting to selection.
-- **Smart Applications**: Student tracking system with status updates and history.
-- **Interview Scheduling**: Integrated scheduling system for online (Google Meet) or offline interviews.
-- **Notification System**: Real-time alerts for interview invites, application status changes, and new job postings.
-- **Placement Reports**: Visual analytics for placement officers to track recruitment success rates.
-- **Advanced Admin Activity**: Detailed logs of every action taken on the platform for auditing.
-- **Responsive UI/UX**: Premium "Glassy" design adapted for all screen sizes.
+The latest cleanup pass was verified with:
 
-## Development Status
+- `mvn.cmd -q -DskipTests compile` in `backend`
+- `npm.cmd run build` in `frontend`
 
-- **Branching**: The project has been consolidated into a single **`main`** branch for streamlined development.
-- **Data**: Initialized with a high-quality dataset of 10+ records per entity (Students, Companies, Jobs) for immediate testing.
-- **UI**: Standardized Sidebar positions across all dashboards for a consistent user experience.
+## Notes
 
-## Getting Started
-
-### Prerequisites
-- Java 17+
-- Node.js 18+ and npm
-- Maven 3.8+
-
-### Quick Start (Development)
-
-1. **Backend**:
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-   *Available at http://localhost:8080*
-
-2. **Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-   *Available at http://localhost:5173*
-
-## API Reference
-
-Comprehensive API documentation is available at [API_REFERENCE.md](API_REFERENCE.md).
-
----
-
-**Last Updated**: March 2026
+- Admin and company export endpoints are still not implemented on the backend. The frontend now shows safe placeholder states instead of broken download actions.
+- The project still does not have a formal automated test suite yet.

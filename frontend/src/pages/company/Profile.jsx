@@ -14,6 +14,7 @@ import {
     MapPin,
     X,
 } from 'lucide-react';
+import { getAssetUrl } from '../../api/runtime';
 
 const parseBranchAddress = (branchAddress) => {
     const parts = (branchAddress || '')
@@ -52,12 +53,6 @@ const getAddressItems = (profile, parsedAddress) => [
     { label: 'Country', value: parsedAddress.country, icon: Globe },
     { label: 'Full Address', value: profile.branchAddress, icon: MapPin, fullWidth: true },
 ];
-
-const getAssetUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `http://localhost:9092${url}`;
-};
 
 export default function CompanyProfile() {
     const [profile, setProfile] = useState(null);

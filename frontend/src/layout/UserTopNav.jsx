@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { userApi } from '../api/userApi';
+import NotificationBell from '../components/shared/NotificationBell';
+import { getAssetUrl } from '../api/runtime';
 
 const getSurnameInitial = (lastName) => {
     const trimmedLastName = lastName?.trim();
@@ -11,11 +13,6 @@ const getSurnameInitial = (lastName) => {
 const getDisplayName = (firstName, lastName) => {
     const name = [firstName, lastName].filter(Boolean).join(' ').trim();
     return name || 'User Profile';
-};
-const getAssetUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `http://localhost:9092${url}`;
 };
 
 export default function UserTopNav() {
@@ -69,6 +66,7 @@ export default function UserTopNav() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <NotificationBell />
                     <Link
                         to="/user/profile"
                         className="group flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-white/[0.08]"

@@ -12,10 +12,14 @@ import {
     Sparkles,
     Users,
     X,
+    Activity,
+    AlertCircle,
+    Check
 } from 'lucide-react';
 import { publicApi } from '../../api/publicApi';
 import { userApi } from '../../api/userApi';
 import TopNav from '../../layout/TopNav';
+import { getAssetUrl } from '../../api/runtime';
 
 const formatEnum = (value) => (value ? value.replace(/_/g, ' ') : 'Not specified');
 
@@ -40,6 +44,8 @@ export default function JobDetail() {
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    // Apply states
     const [applyLoading, setApplyLoading] = useState(false);
     const [applyMessage, setApplyMessage] = useState('');
     const [applyError, setApplyError] = useState('');
@@ -47,6 +53,12 @@ export default function JobDetail() {
     const [showApplyModal, setShowApplyModal] = useState(false);
     const [resumeConfirmed, setResumeConfirmed] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
+
+    // ATS States
+    const [atsLoading, setAtsLoading] = useState(false);
+    const [atsError, setAtsError] = useState('');
+    const [atsScore, setAtsScore] = useState(null);
+    const [showAtsModal, setShowAtsModal] = useState(false);
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -63,12 +75,6 @@ export default function JobDetail() {
         };
         fetchJob();
     }, [id]);
-
-    const getDocumentUrl = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http://') || url.startsWith('https://')) return url;
-        return `http://localhost:9092${url}`;
-    };
 
     const handleApply = async () => {
         const token = localStorage.getItem('token');
@@ -116,6 +122,29 @@ export default function JobDetail() {
             setApplyError(message.replace(/^Error:\s*/i, ''));
         } finally {
             setApplyLoading(false);
+        }
+    };
+
+    const handleAtsCheck = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
+        setAtsLoading(true);
+        setAtsError('');
+        setAtsScore(null);
+        setShowAtsModal(true);
+
+        try {
+            const res = await userApi.calculateAtsScore(id);
+            setAtsScore(res.data);
+        } catch (err) {
+            const message = typeof err.response?.data === 'string' ? err.response.data : (err.response?.data?.message || 'Failed to analyze ATS Score.');
+            setAtsError(message.replace(/^Error:\s*/i, ''));
+        } finally {
+            setAtsLoading(false);
         }
     };
 
@@ -327,7 +356,7 @@ export default function JobDetail() {
                         </div>
                     )}
 
-                    {/* Apply Button */}
+                    {/* Apply AND ATS Button Container */}
                     {job.status !== 'CLOSED' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -353,13 +382,23 @@ export default function JobDetail() {
                                         Review your resume and submit your application for recruiter review.
                                     </p>
                                 </div>
-                                <button
-                                    onClick={handleApply}
-                                    disabled={profileLoading}
-                                    className="w-full rounded-xl bg-primary px-10 py-3 text-sm font-bold text-background shadow-[0_0_20px_rgba(77,163,255,0.35)] transition-all hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(77,163,255,0.5)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
-                                >
-                                    {profileLoading ? 'Checking Resume...' : 'Apply Now'}
-                                </button>
+                                <div className="flex w-full flex-col sm:flex-row gap-3 md:w-auto">
+                                    <button
+                                        onClick={handleAtsCheck}
+                                        disabled={profileLoading || applyLoading || loading}
+                                        className="relative flex items-center justify-center gap-2 w-full rounded-xl border border-primary px-8 py-3 text-sm font-bold text-primary transition-all hover:bg-primary/10 md:w-auto"
+                                    >
+                                        <Activity className="h-4 w-4" />
+                                        Check ATS Result
+                                    </button>
+                                    <button
+                                        onClick={handleApply}
+                                        disabled={profileLoading || applyLoading || loading}
+                                        className="w-full rounded-xl bg-primary px-10 py-3 text-sm font-bold text-background shadow-[0_0_20px_rgba(77,163,255,0.35)] transition-all hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(77,163,255,0.5)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
+                                    >
+                                        {profileLoading ? 'Checking...' : 'Apply Now'}
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     )}
@@ -367,6 +406,7 @@ export default function JobDetail() {
             ) : null}
 
             <AnimatePresence>
+                {/* Apply Modal */}
                 {showApplyModal && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -402,12 +442,12 @@ export default function JobDetail() {
                             <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Resume</p>
                                 <a
-                                    href={getDocumentUrl(userProfile?.resumeUrl)}
+                                    href={getAssetUrl(userProfile?.resumeUrl)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white underline decoration-primary/60 underline-offset-4 transition-colors hover:text-primary"
                                 >
-                                    Resume
+                                    View Resume
                                 </a>
                             </div>
 
@@ -449,6 +489,132 @@ export default function JobDetail() {
                                     {applyLoading ? 'Applying...' : 'Apply With This Resume'}
                                 </button>
                             </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+
+                {/* ATS Modal */}
+                {showAtsModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                            className="glass-panel w-full max-w-2xl overflow-y-auto max-h-[85vh] rounded-[28px] border border-white/10 p-6 scrollbar-thin overflow-x-hidden"
+                        >
+                            <div className="flex items-start justify-between gap-4 mb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                                        <Activity className="h-5 w-5 text-primary" />
+                                        AI Match Score
+                                    </h3>
+                                    <p className="mt-2 text-sm text-text-secondary">
+                                        Powered by Google Gemini AI
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAtsModal(false)}
+                                    className="rounded-full border border-white/10 p-2 text-text-secondary transition-colors hover:text-white"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            {atsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                    <div className="relative h-16 w-16">
+                                        <div className="absolute inset-0 rounded-full border-t-2 border-primary animate-spin"></div>
+                                        <div className="absolute inset-2 rounded-full border-t-2 border-secondary animate-spin" style={{ animationDirection: 'reverse' }}></div>
+                                    </div>
+                                    <p className="font-medium text-white">Analyzing Resume...</p>
+                                    <p className="text-xs text-text-secondary text-center max-w-sm">
+                                        Reading your file and comparing it against the job description using AI models. This may take up to 10 seconds.
+                                    </p>
+                                </div>
+                            ) : atsError ? (
+                                <div className="rounded-2xl border border-danger/30 bg-danger/10 p-6 flex flex-col items-center text-center">
+                                    <AlertCircle className="h-10 w-10 text-danger mb-3" />
+                                    <h4 className="text-danger font-bold text-lg mb-1">Analysis Failed</h4>
+                                    <p className="text-sm text-danger/80">{atsError}</p>
+                                    <p className="text-xs text-danger/60 mt-4">Make sure you have uploaded a valid PDF resume in your Profile.</p>
+                                </div>
+                            ) : atsScore ? (
+                                <div className="space-y-6">
+                                    {/* Score Circle */}
+                                    <div className="flex flex-col items-center justify-center p-6 bg-white/[0.02] rounded-3xl border border-white/5">
+                                        <div className="relative h-32 w-32 flex items-center justify-center rounded-full border-4 border-white/10">
+                                            {/* Circular Progress Representation */}
+                                            <svg className="absolute inset-0 h-full w-full transform -rotate-90">
+                                                <circle cx="60" cy="60" r="56" fill="transparent" stroke="currentColor" strokeWidth="8" className="text-white/5" />
+                                                <circle 
+                                                    cx="60" cy="60" r="56" fill="transparent" 
+                                                    stroke={atsScore.score >= 70 ? '#10b981' : atsScore.score >= 40 ? '#f59e0b' : '#ef4444'} 
+                                                    strokeWidth="8" 
+                                                    strokeDasharray={351} 
+                                                    strokeDashoffset={351 - (351 * atsScore.score) / 100}
+                                                    className="transition-all duration-1000 ease-out" 
+                                                />
+                                            </svg>
+                                            <div className="flex flex-col items-center text-center">
+                                                <span className="text-4xl font-bold text-white">{atsScore.score}</span>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-widest">out of 100</span>
+                                            </div>
+                                        </div>
+                                        <p className="mt-4 text-center font-medium text-white/90">{atsScore.matchPercentage} Match</p>
+                                        <p className="mt-2 text-sm text-center text-text-secondary max-w-sm">
+                                            {atsScore.generalFeedback}
+                                        </p>
+                                    </div>
+
+                                    {/* Skills Analysis */}
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="glass-panel p-5 rounded-2xl border border-success/20 bg-success/5">
+                                            <h4 className="text-xs font-semibold text-success uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <CheckCircle className="h-4 w-4" /> You Have (Matches)
+                                            </h4>
+                                            {atsScore.matchingSkills && atsScore.matchingSkills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {atsScore.matchingSkills.map((s, i) => (
+                                                        <span key={i} className="px-2 py-1 bg-success/10 text-success text-xs rounded-md">{s}</span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-success/60">No direct skill matches found.</p>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="glass-panel p-5 rounded-2xl border border-danger/20 bg-danger/5">
+                                            <h4 className="text-xs font-semibold text-danger uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <AlertCircle className="h-4 w-4" /> You're Missing
+                                            </h4>
+                                            {atsScore.missingSkills && atsScore.missingSkills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {atsScore.missingSkills.map((s, i) => (
+                                                        <span key={i} className="px-2 py-1 bg-danger/10 text-danger text-xs rounded-md">{s}</span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-danger/60">No missing skills detected based on the description!</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex justify-center pt-4">
+                                        <button
+                                            onClick={() => setShowAtsModal(false)}
+                                            className="px-6 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition"
+                                        >
+                                            Close Analysis
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : null}
                         </motion.div>
                     </motion.div>
                 )}

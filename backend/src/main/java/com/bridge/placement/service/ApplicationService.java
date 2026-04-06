@@ -4,12 +4,14 @@ import com.bridge.placement.dto.response.AilsScoreResponse;
 import com.bridge.placement.dto.response.MessageResponse;
 import com.bridge.placement.entity.Application;
 import com.bridge.placement.entity.Job;
+import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.entity.User;
 import com.bridge.placement.enums.ApplicationStatus;
 import com.bridge.placement.enums.JobStatus;
 import com.bridge.placement.enums.NotificationType;
 import com.bridge.placement.repository.ApplicationRepository;
 import com.bridge.placement.repository.JobRepository;
+import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +29,9 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final PlacementOfficerRepository placementOfficerRepository;
     private final NotificationService notificationService;
+    private final AilsService ailsService;
 
     @Transactional
     public MessageResponse applyForJob(Long userId, Long jobId) {
@@ -44,6 +48,7 @@ public class ApplicationService {
         application.setUser(user);
         application.setAppliedAt(LocalDateTime.now());
         application.setApplicationStatus(ApplicationStatus.APPLIED);
+        populateAilsFields(application, user, job);
 
         applicationRepository.save(application);
 
@@ -58,6 +63,15 @@ public class ApplicationService {
 
     public Page<Application> getApplicationsForJob(Long jobId, Pageable pageable) {
         return applicationRepository.findByJobId(jobId, pageable);
+    }
+
+    public Page<Application> getApplicationsForOfficerJob(Long officerId, Long jobId, Pageable pageable) {
+        validateOfficerAccessToJob(officerId, jobId);
+        return applicationRepository.findByJobId(jobId, pageable);
+    }
+
+    public Application getApplicationForOfficer(Long officerId, Long applicationId) {
+        return getAccessibleApplicationForOfficer(officerId, applicationId);
     }
 
     public List<Application> getApplicationsForCompanyJob(Long companyId, Long jobId) {
@@ -126,7 +140,7 @@ public class ApplicationService {
         NotificationType notifType = switch (status) {
             case SELECTED -> NotificationType.SELECTION;
             case REJECTED -> NotificationType.REJECTION;
-            default -> NotificationType.STATUS_CHANGE; // APPLIED, SHORTLISTED, INTERVIEW
+            default -> NotificationType.STATUS_CHANGE; // APPLIED, SHORTLISTED, INTERVIEW, TECHNICAL_ROUND
         };
 
         notificationService.createNotification(
@@ -148,6 +162,12 @@ public class ApplicationService {
         }
 
         return updateApplicationStatus(applicationId, status);
+    }
+
+    @Transactional
+    public MessageResponse updateApplicationStatusForOfficer(Long officerId, Long applicationId, ApplicationStatus status) {
+        Application application = getAccessibleApplicationForOfficer(officerId, applicationId);
+        return updateApplicationStatus(application.getId(), status);
     }
 
     private void validateEligibility(User user, Job job) {
@@ -181,6 +201,23 @@ public class ApplicationService {
         return "LOW";
     }
 
+    private void populateAilsFields(Application application, User user, Job job) {
+        try {
+            var result = ailsService.calculateScore(user, job);
+            application.setAilsScore(result.getScore());
+            application.setExplanation(result.getExplanation());
+            application.setImprovementSuggestions(result.getImprovementSuggestions().isEmpty()
+                    ? null
+                    : String.join(" | ", result.getImprovementSuggestions()));
+            application.setExceptionFlag(result.isExceptionFlag());
+        } catch (RuntimeException exception) {
+            application.setAilsScore(null);
+            application.setExplanation("AILS scoring could not be generated at apply time.");
+            application.setImprovementSuggestions(null);
+            application.setExceptionFlag(false);
+        }
+    }
+
     @Transactional
     public MessageResponse setRemark(Long applicationId, String remark) {
         Application application = applicationRepository.findById(applicationId)
@@ -188,5 +225,37 @@ public class ApplicationService {
         application.setRemarksByOfficer(remark);
         applicationRepository.save(application);
         return new MessageResponse("Remark saved successfully");
+    }
+
+    @Transactional
+    public MessageResponse setRemarkForOfficer(Long officerId, Long applicationId, String remark) {
+        Application application = getAccessibleApplicationForOfficer(officerId, applicationId);
+        application.setRemarksByOfficer(remark);
+        applicationRepository.save(application);
+        return new MessageResponse("Remark saved successfully");
+    }
+
+    private Application getAccessibleApplicationForOfficer(Long officerId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        validateOfficerAccessToJob(officerId, application.getJob().getId());
+        return application;
+    }
+
+    private void validateOfficerAccessToJob(Long officerId, Long jobId) {
+        PlacementOfficer officer = placementOfficerRepository.findById(officerId)
+                .orElseThrow(() -> new RuntimeException("Officer not found"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        boolean assignedToJob = job.getAssignedOfficers().stream()
+                .anyMatch(assignedOfficer -> assignedOfficer.getId().equals(officerId));
+
+        if (!officer.isApproved() || !officer.isActive()) {
+            throw new RuntimeException("Officer account is not active.");
+        }
+        if (!job.getCompany().getId().equals(officer.getCompany().getId()) || !assignedToJob) {
+            throw new RuntimeException("Unauthorized access to this job.");
+        }
     }
 }

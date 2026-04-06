@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -43,10 +43,11 @@ public class ApplicationController {
     @PreAuthorize("hasRole('PLACEMENT_OFFICER')")
     public ResponseEntity<Map<String, Object>> getApplications(
             @PathVariable Long jobId,
+            @AuthenticationPrincipal BridgeUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> appPage = applicationService.getApplicationsForJob(jobId, pageable);
+            @RequestParam(defaultValue = "100") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
+        Page<Application> appPage = applicationService.getApplicationsForOfficerJob(userDetails.getId(), jobId, pageable);
         
         Map<String, Object> response = new HashMap<>();
         response.put("applications", appPage.getContent());
@@ -57,12 +58,33 @@ public class ApplicationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/officer/application/{id}")
+    @PreAuthorize("hasRole('PLACEMENT_OFFICER')")
+    public ResponseEntity<Application> getApplication(
+            @PathVariable Long id,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.getApplicationForOfficer(userDetails.getId(), id));
+    }
+
     @PutMapping("/officer/application/status")
     @PreAuthorize("hasRole('PLACEMENT_OFFICER')")
     public ResponseEntity<MessageResponse> updateStatus(
             @RequestParam Long applicationId,
-            @RequestParam ApplicationStatus status) {
-        return ResponseEntity.ok(applicationService.updateApplicationStatus(applicationId, status));
+            @RequestParam String status,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        if (status == null || status.isBlank()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("status is required"));
+        }
+
+        ApplicationStatus parsedStatus;
+        try {
+            parsedStatus = ApplicationStatus.valueOf(status.trim().toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Invalid application status: " + status));
+        }
+
+        return ResponseEntity.ok(applicationService.updateApplicationStatusForOfficer(
+                userDetails.getId(), applicationId, parsedStatus));
     }
 
     /**
@@ -73,8 +95,10 @@ public class ApplicationController {
     @PreAuthorize("hasRole('PLACEMENT_OFFICER')")
     public ResponseEntity<MessageResponse> setRemark(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(applicationService.setRemark(id, body.get("remark")));
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.setRemarkForOfficer(
+                userDetails.getId(), id, body.get("remark")));
     }
 
     /**
@@ -82,7 +106,7 @@ public class ApplicationController {
      * Returns the full ATS score breakdown for an application.
      */
     @GetMapping("/applications/{id}/score")
-    @PreAuthorize("hasAnyRole('USER', 'PLACEMENT_OFFICER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'PLACEMENT_OFFICER', 'SUPER_ADMIN')")
     public ResponseEntity<AilsScoreResponse> getAilsScore(@PathVariable Long id) {
         return ResponseEntity.ok(applicationService.getAilsScore(id));
     }

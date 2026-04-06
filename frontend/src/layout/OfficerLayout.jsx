@@ -2,16 +2,11 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import OfficerSidebar from './OfficerSidebar';
 import OfficerTopNav from './OfficerTopNav';
+import { getStoredTokenPayload, hasRole } from '../utils/auth';
 
 export default function OfficerLayout() {
-    const token = localStorage.getItem('token');
-    if (!token) return <Navigate to="/login" replace />;
-
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const rolesStr = JSON.stringify(payload);
-        if (!rolesStr.includes('PLACEMENT_OFFICER')) return <Navigate to="/login" replace />;
-    } catch (e) {
+    const payload = getStoredTokenPayload();
+    if (!payload || !hasRole(payload, 'PLACEMENT_OFFICER')) {
         return <Navigate to="/login" replace />;
     }
 

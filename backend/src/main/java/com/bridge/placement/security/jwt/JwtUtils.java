@@ -32,6 +32,13 @@ public class JwtUtils {
 
     @PostConstruct
     public void init() {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            logger.warn("⚠️ JWT_SECRET not set — using an insecure default. DO NOT use this in production!");
+            jwtSecret = "insecure-local-dev-fallback-key-min-32-chars!!";
+        }
+        if (jwtSecret.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 characters long.");
+        }
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 

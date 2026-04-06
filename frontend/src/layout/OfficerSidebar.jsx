@@ -8,7 +8,7 @@ const NAV_ITEMS = [
     { path: '/officer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/officer/jobs', icon: Briefcase, label: 'Manage Jobs' },
     { path: '/officer/applicants', icon: UserCheck, label: 'Applicants' },
-    { path: '/officer/students', icon: Users, label: 'Selected Students' },
+    { path: '/officer/students', icon: Users, label: 'Selected Users' },
     { path: '/officer/profile', icon: UserCircle, label: 'My Profile' },
 ];
 

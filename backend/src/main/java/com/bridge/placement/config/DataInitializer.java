@@ -50,22 +50,22 @@ public class DataInitializer implements CommandLineRunner {
     private static final String WORKING_PASSWORD = "Working@123";
 
     private static final String[] IMAGE_URLS = {
-            "/uploads/1590992e-9826-4c8e-b3c4-a38b8fe31e15.png",
-            "/uploads/19ce0182-4890-4853-84ef-0842a4d48b61.jpg",
-            "/uploads/51a99c68-535d-41f5-883a-225f395f2f70.jpg",
-            "/uploads/9788dd8f-8a3f-4a4e-8f5b-eece933449e1.jpg",
-            "/uploads/99ae78a6-b147-4f32-97e3-385716e77753.jpg",
-            "/uploads/e8880325-9bde-4463-8ef8-bc291ade666c.jpg"
+            "https://placehold.co/600x600/png?text=Bridge+1",
+            "https://placehold.co/600x600/png?text=Bridge+2",
+            "https://placehold.co/600x600/png?text=Bridge+3",
+            "https://placehold.co/600x600/png?text=Bridge+4",
+            "https://placehold.co/600x600/png?text=Bridge+5",
+            "https://placehold.co/600x600/png?text=Bridge+6"
     };
 
     private static final String[] PDF_URLS = {
-            "/uploads/0c1701bc-3548-4c25-97b6-9402f2677c0f.pdf",
-            "/uploads/1b714ea5-3a20-4159-a1b5-e9a1e2fe86d3.pdf",
-            "/uploads/2c93a10a-5d23-4bca-807c-351052221cd9.pdf",
-            "/uploads/3e2e9833-5d37-403c-b10c-e35f077a01e2.pdf",
-            "/uploads/9234bd28-f1b7-4e7a-95c0-c423ef96f062.pdf",
-            "/uploads/c15720ba-f363-47b8-bbf5-5e7aedf5c44b.pdf",
-            "/uploads/d3f53b03-c9bd-4c67-ad56-0de62cd3b05c.pdf"
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
     };
 
     private final AdminRepository adminRepository;

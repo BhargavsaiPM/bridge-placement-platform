@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const publicApi = {
+    getStats: () => api.get('/public/stats'),
     searchJobs: (location, type) => {
         let url = '/jobs/search';
         const params = new URLSearchParams();

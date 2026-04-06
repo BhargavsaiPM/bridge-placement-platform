@@ -2,12 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Camera, Check, Edit2, KeyRound, Mail, Phone, User, X } from 'lucide-react';
 import { officerApi } from '../../api/officerApi';
 import AddressFields from '../../components/shared/AddressFields';
-
-const getAssetUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `http://localhost:9092${url}`;
-};
+import { getAssetUrl } from '../../api/runtime';
 
 const parseAddress = (address) => {
     const parts = (address || '')

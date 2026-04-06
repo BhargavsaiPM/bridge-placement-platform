@@ -7,6 +7,7 @@ const COLUMNS = [
     { id: 'APPLIED', title: 'Applied', color: 'border-text-secondary' },
     { id: 'SHORTLISTED', title: 'Shortlisted', color: 'border-primary' },
     { id: 'INTERVIEW', title: 'Interview', color: 'border-warning' },
+    { id: 'TECHNICAL_ROUND', title: 'Technical Round', color: 'border-cyan-300' },
     { id: 'SELECTED', title: 'Selected', color: 'border-success' },
     { id: 'REJECTED', title: 'Rejected', color: 'border-danger' },
 ];

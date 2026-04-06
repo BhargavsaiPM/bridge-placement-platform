@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { adminApi } from '../../api/adminApi';
 import { authApi } from '../../api/authApi';
 import { User, Mail, Shield, Edit2, Check, X, Camera } from 'lucide-react';
+import { getAssetUrl } from '../../api/runtime';
 
 export default function AdminProfile() {
     const [profile, setProfile] = useState(null);
@@ -163,7 +164,7 @@ export default function AdminProfile() {
                             {previewUrl ? (
                                 <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                             ) : profile.profilePhoto ? (
-                                <img src={`http://localhost:9092${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
+                                <img src={getAssetUrl(profile.profilePhoto)} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                                 <span className="text-6xl font-black text-primary/80 tracking-tighter">A</span>
                             )}

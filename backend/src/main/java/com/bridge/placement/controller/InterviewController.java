@@ -44,8 +44,10 @@ public class InterviewController {
      */
     @GetMapping("/officer/application/{applicationId}/interview-slots")
     @PreAuthorize("hasRole('PLACEMENT_OFFICER')")
-    public ResponseEntity<List<InterviewSlot>> getSlots(@PathVariable Long applicationId) {
-        return ResponseEntity.ok(interviewSlotService.getInterviewSlots(applicationId));
+    public ResponseEntity<List<InterviewSlot>> getSlots(
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        return ResponseEntity.ok(interviewSlotService.getInterviewSlots(userDetails.getId(), applicationId));
     }
 
     /**
@@ -54,7 +56,9 @@ public class InterviewController {
      */
     @GetMapping("/user/application/{applicationId}/interview")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<InterviewSlot> getMyInterview(@PathVariable Long applicationId) {
-        return ResponseEntity.ok(interviewSlotService.getLatestSlot(applicationId));
+    public ResponseEntity<InterviewSlot> getMyInterview(
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal BridgeUserDetails userDetails) {
+        return ResponseEntity.ok(interviewSlotService.getLatestSlot(userDetails.getId(), applicationId));
     }
 }

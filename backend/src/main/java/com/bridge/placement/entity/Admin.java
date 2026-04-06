@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "admins")
 @Getter
@@ -30,4 +32,6 @@ public class Admin extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.SUPER_ADMIN;
+
+    private LocalDateTime lastSeen;
 }

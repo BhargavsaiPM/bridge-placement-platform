@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Building2, Users, Briefcase, ArrowRight, Sparkles, Search, ChevronRight } from 'lucide-react';
-import axios from 'axios';
+import { publicApi } from '../../api/publicApi';
 import logoImg from '../../assets/Bridge-logo.png';
 
 export default function Home() {
@@ -24,10 +24,9 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        // Fetch stats from existing public endpoint
         const fetchStats = async () => {
             try {
-                const res = await axios.get('http://localhost:9092/api/public/stats');
+                const res = await publicApi.getStats();
                 setStats(res.data);
             } catch (err) {
                 console.error("Failed to fetch public stats", err);

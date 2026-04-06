@@ -3,6 +3,7 @@ package com.bridge.placement.security;
 import com.bridge.placement.entity.Company;
 import com.bridge.placement.entity.PlacementOfficer;
 import com.bridge.placement.entity.User;
+import com.bridge.placement.repository.AdminRepository;
 import com.bridge.placement.repository.CompanyRepository;
 import com.bridge.placement.repository.PlacementOfficerRepository;
 import com.bridge.placement.repository.UserRepository;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class LastSeenFilter extends OncePerRequestFilter {
 
+    private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final PlacementOfficerRepository placementOfficerRepository;
@@ -42,10 +44,15 @@ public class LastSeenFilter extends OncePerRequestFilter {
             String roleStr = auth.getAuthorities().stream().findFirst().map(a -> a.getAuthority()).orElse("");
 
             try {
-                if (roleStr.equals("ROLE_USER") || roleStr.equals("ROLE_ADMIN")) {
+                if (roleStr.equals("ROLE_USER")) {
                     userRepository.findById(userDetails.getId()).ifPresent(user -> {
                         user.setLastSeen(LocalDateTime.now());
                         userRepository.save(user);
+                    });
+                } else if (roleStr.equals("ROLE_SUPER_ADMIN")) {
+                    adminRepository.findById(userDetails.getId()).ifPresent(admin -> {
+                        admin.setLastSeen(LocalDateTime.now());
+                        adminRepository.save(admin);
                     });
                 } else if (roleStr.equals("ROLE_COMPANY")) {
                     companyRepository.findById(userDetails.getId()).ifPresent(company -> {

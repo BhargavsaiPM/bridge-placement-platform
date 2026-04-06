@@ -12,6 +12,7 @@ C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\dto\reques
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\ails\SimilarityCalculator.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\dto\response\MessageResponse.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\enums\NotificationType.java
+C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\AtsService.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\enums\RoundName.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\entity\Admin.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\security\LastSeenFilter.java
@@ -48,6 +49,7 @@ C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\repository
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\OfficerService.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\ails\AilsResult.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\ails\JobVectorizer.java
+C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\config\ApplicationStatusConstraintUpdater.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\CloudinaryService.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\dto\response\AilsScoreResponse.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\controller\JobController.java
@@ -71,6 +73,8 @@ C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\Fi
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\config\DataInitializer.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\entity\OtpToken.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\security\jwt\AuthEntryPointJwt.java
+C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\dto\response\AtsScoreResponse.java
+C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\controller\AtsController.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\entity\Application.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\enums\ApplicationStatus.java
 C:\Projects\Bridge_Project\backend\src\main\java\com\bridge\placement\service\InterviewSlotService.java
